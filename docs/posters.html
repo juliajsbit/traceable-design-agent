@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traceable Design Agent</title>
+<style>
+:root {
+  --bg: #e9e8e4; --surface: #fcfcfb; --panel: #f4f3f0; --line: #dddcd7;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #7a7974;
+  --llm: #2a78d6; --agent: #eb6834;
+  --good: #0ca30c; --good-ink: #006300; --good-bg: #e6f4e6;
+  --critical: #d03b3b; --critical-bg: #fbe9e7; --warn-ink: #8a5a00; --warn-bg: #fdf3dc;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 -apple-system, "Helvetica Neue", system-ui, sans-serif; }
+.wrap { padding: 24px 16px; display: grid; gap: 24px; justify-items: center; }
+.poster { width: 1600px; height: 900px; background: var(--surface); padding: 44px 64px 56px; display: grid; gap: 24px;
+          transform-origin: top left; position: relative; overflow: hidden; }
+.frame { width: 100%; max-width: 1600px; }
+.kicker { font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-size: 46px; line-height: 1.1; margin: 6px 0 0; letter-spacing: -.01em; }
+h2 { font-size: 20px; margin: 0 0 12px; }
+p { margin: 0; }
+.sub { font-size: 20px; color: var(--text-2); margin-top: 12px; max-width: 1150px; }
+.foot { position: absolute; left: 64px; right: 64px; bottom: 26px; font-size: 13px; color: var(--muted);
+        display: flex; justify-content: space-between; }
+.panel { background: var(--panel); border-radius: 14px; padding: 24px 26px; }
+
+/* poster 1 */
+.p1 { grid-template-rows: auto 1fr; }
+.p1 .body { display: grid; grid-template-columns: 560px 1fr; gap: 32px; min-height: 0; }
+.flow { display: grid; gap: 4px; align-content: start; }
+.step { display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; background: var(--surface);
+        border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; }
+.step .n { width: 40px; height: 40px; border-radius: 50%; background: var(--text); color: var(--surface);
+           display: grid; place-items: center; font-weight: 700; font-size: 18px; }
+.step b { font-size: 18px; }
+.step span { display: block; color: var(--text-2); font-size: 15px; }
+.step.key { border: 2px solid var(--text); }
+.arrow { text-align: center; color: var(--muted); font-size: 14px; line-height: 1; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 99px; background: var(--panel); color: var(--text-2); }
+.chip.ok { background: var(--good-bg); color: var(--good-ink); }
+.chip.bad { background: var(--critical-bg); color: var(--critical); }
+.chip.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.catch { display: grid; grid-template-rows: auto 1fr auto; gap: 14px; min-height: 0; }
+.catch .verdict { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; }
+.tile b { display: block; font-size: 34px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.tile span { color: var(--text-2); font-size: 14px; }
+.legend { display: flex; gap: 20px; font-size: 14px; color: var(--text-2); align-items: center; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+
+/* poster 2 */
+.p2 { grid-template-rows: auto auto 1fr auto; }
+.oracle { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.oracle .panel { padding: 18px 22px; font-size: 16px; color: var(--text-2); }
+.oracle .panel b { color: var(--text); }
+.board { display: grid; grid-template-columns: 210px repeat(4, 1fr); column-gap: 26px; align-content: start; }
+.board .head { font-size: 14px; font-weight: 700; color: var(--text-2); padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.board .head small { display: block; font-weight: 400; color: var(--muted); }
+.board .name { font-size: 16px; padding: 9px 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+.board .name i { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.board .name small { color: var(--muted); }
+.board .cell { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line);
+               font-size: 15px; font-variant-numeric: tabular-nums; color: var(--text-2); }
+.board .bar { height: 14px; border-radius: 0 4px 4px 0; flex: none; }
+.board .gap { grid-column: 1 / -1; height: 10px; }
+.flag { font-weight: 700; color: var(--critical); }
+.takeaways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.takeaways .panel { padding: 18px 22px; }
+.takeaways b { display: block; font-size: 18px; margin-bottom: 4px; }
+.takeaways span { color: var(--text-2); font-size: 15px; }
+
+/* a single poster at its real size, for PNG export: posters.html?p=1 */
+body.single { background: var(--surface); }
+body.single .wrap { padding: 0; }
+body.single .frame { max-width: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="frame" data-poster="1"><section class="poster p1">
+  <div>
+    <div class="kicker">Traceable Design Agent</div>
+    <h1>An AI-proposed design is not done until physics checks it</h1>
+    <p class="sub">A model proposes bracket designs and claims each one passes. A verifier recomputes every number,
+      checks seven requirements, and keeps the evidence for every decision.</p>
+  </div>
+  <div class="body">
+    <div class="flow">
+      <div class="step"><div class="n">1</div><div><b>Requirements</b><span>load, length, deflection limit, envelope, safety factors, seven checks</span>
+        <div class="chips"><span class="chip">REQ-001 yield</span><span class="chip">002 ultimate</span><span class="chip">003 deflection</span>
+          <span class="chip">004 envelope</span><span class="chip">005 stock plate</span><span class="chip">006 worst case</span><span class="chip">007 proportions</span></div></div></div>
+      <div class="arrow">&#8595;</div>
+      <div class="step"><div class="n">2</div><div><b>Proposer</b><span>the model suggests 8 designs and its own estimates: margin, deflection, mass</span></div></div>
+      <div class="arrow">&#8595;</div>
+      <div class="step key"><div class="n">3</div><div><b>Verifier</b><span>recomputes everything with beam physics, never trusts a claim, labels each design</span>
+        <div class="chips"><span class="chip ok">verified</span><span class="chip bad">fails</span><span class="chip warn">fragile</span>
+          <span class="chip warn">not manufacturable</span><span class="chip warn">out of envelope</span></div></div></div>
+      <div class="arrow">&#8595;</div>
+      <div class="step"><div class="n">4</div><div><b>Decision trace</b><span>the lightest verified design, and why each lighter one was dropped</span></div></div>
+    </div>
+
+    <div class="catch panel">
+      <div>
+        <h2>A real catch: one confident formula slip, on every design</h2>
+        <p style="color:var(--text-2);font-size:15px">Hard case F, Sonnet 5.5 in one call. It got every stress right and every
+          deflection low by exactly 3x. All 8 designs claimed to pass. None did.</p>
+      </div>
+      <svg id="slip" viewBox="0 0 880 380" role="img" aria-label="Claimed versus actual tip deflection for 8 designs"></svg>
+      <div class="verdict">
+        <div class="tile"><b>8 / 8</b><span>claimed to pass</span></div>
+        <div class="tile"><b style="color:var(--critical)">0 / 8</b><span>actually pass</span></div>
+        <div class="tile"><b style="color:var(--good-ink)">8 / 8</b><span>caught by the verifier, none selected</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Toy model: textbook cantilever formulas, typical handbook values. It shows the pattern, not real engineering.</span>
+    <span>1 / 2</span></div>
+</section></div>
+
+<div class="frame" data-poster="2"><section class="poster p2">
+  <div>
+    <div class="kicker">Traceable Design Agent &middot; eval</div>
+    <h1>Does the agent earn its cost?</h1>
+    <p class="sub">Two ways to ask a model for designs, three models, seven cases (three of them with traps).
+      <b style="color:var(--llm)">llm</b>: one call with the requirements.
+      <b style="color:var(--agent)">agent</b>: the same model in a loop that can run the physics check before it answers.</p>
+  </div>
+  <div class="oracle">
+    <div class="panel"><b>The oracle</b> is a brute-force search over every design in a case, up to 17,000 of them. It finds the true lightest
+      part that passes, so every answer can be scored: <b>regret</b> = how much heavier the chosen part is.</div>
+    <div class="panel"><b>The first eval said a model beat the optimum.</b> That is impossible, so the bug was in my reference:
+      it only tried whole-millimetre widths. Fixed it, re-scored the saved runs, no new model calls.</div>
+  </div>
+  <div class="board" id="board"></div>
+  <div class="takeaways">
+    <div class="panel"><b>The verifier is not optional</b><span>A strong model made a confident 3x error in 1 of 4 runs.
+      You cannot tell which run in advance, so every run is checked.</span></div>
+    <div class="panel"><b>The loop buys reliability, not lighter parts</b><span>The agent never produced a false pass.
+      With the strongest model the loop costs 1.6x for 0.2% less mass.</span></div>
+    <div class="panel"><b>Cheap model + tool is the trade to measure</b><span>Haiku with the tool: every proposal verified,
+      1/13 the cost of Opus, 2.6% heavier. For 500-option sweeps, that is the next test.</span></div>
+  </div>
+  <div class="foot"><span>One run per configuration, seven toy cases. Signals worth testing at scale, not conclusions.</span>
+    <span>2 / 2</span></div>
+</section></div>
+
+</div>
+<script>
+// Case F, Sonnet 5.5, one call: claimed vs recomputed tip deflection (results/eval_sonnet/results.jsonl)
+const SLIP = [
+  ["Ti 41.5 x 8", 1.117, 3.35], ["Al 68.5 x 8", 1.117, 3.35], ["Steel 31 x 8", 0.83, 2.49], ["Steel 59 x 6", 1.033, 3.10],
+  ["Ti 50 x 8", 0.927, 2.78], ["Al 75 x 8", 1.02, 3.06], ["Steel 40 x 8", 0.643, 1.93], ["Ti 45 x 8", 1.03, 3.09],
+];
+// all seven cases; regret is over solved cases (results/eval_*/results.jsonl)
+const BOARD = [
+  {model: "Opus 5.5", kind: "llm", cost: 0.47, verified: 98, regret: 0.28, fp: 0, solved: "7/7"},
+  {model: "Opus 5.5", kind: "agent", cost: 0.77, verified: 100, regret: 0.08, fp: 0, solved: "7/7"},
+  {model: "Sonnet 5.5", kind: "llm", cost: 0.32, verified: 86, regret: 0.07, fp: 8, solved: "6/7"},
+  {model: "Sonnet 5.5", kind: "agent", cost: 0.45, verified: 96, regret: 0.02, fp: 0, solved: "7/7"},
+  {model: "Haiku 5.5", kind: "llm", cost: 0.028, verified: 89, regret: 2.58, fp: 0, solved: "7/7"},
+  {model: "Haiku 5.5", kind: "agent", cost: 0.036, verified: 100, regret: 2.58, fp: 0, solved: "7/7"},
+];
+
+function slipChart() {
+  const svg = document.getElementById("slip"), ns = "http://www.w3.org/2000/svg";
+  const L = 150, R = 860, T = 18, B = 340, max = 3.6, x = v => L + (v / max) * (R - L), rowH = (B - T) / SLIP.length;
+  const el = (tag, attrs, text) => { const e = document.createElementNS(ns, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; svg.appendChild(e); return e; };
+  for (let v = 0; v <= 3.5; v += 0.5) {
+    el("line", {x1: x(v), x2: x(v), y1: T, y2: B, stroke: "#e4e3df"});
+    el("text", {x: x(v), y: B + 22, "text-anchor": "middle", "font-size": 13, fill: "#7a7974"}, v.toFixed(1));
+  }
+  el("text", {x: R, y: B + 40, "text-anchor": "end", "font-size": 13, fill: "#52514e"}, "tip deflection, mm");
+  el("rect", {x: x(0), y: T, width: x(1.5) - x(0), height: B - T, fill: "#0ca30c", opacity: 0.06});
+  el("line", {x1: x(1.5), x2: x(1.5), y1: T - 6, y2: B, stroke: "#0b0b0b", "stroke-width": 2, "stroke-dasharray": "5 4"});
+  el("text", {x: x(1.5) + 8, y: T + 6, "font-size": 13, "font-weight": 700, fill: "#0b0b0b"}, "limit 1.5 mm");
+  SLIP.forEach(([name, claimed, actual], i) => {
+    const y = T + rowH * (i + 0.5);
+    el("text", {x: L - 14, y: y + 5, "text-anchor": "end", "font-size": 14, fill: "#52514e"}, name);
+    el("line", {x1: x(claimed) + 6, x2: x(actual) - 7, y1: y, y2: y, stroke: "#b5b4ae", "stroke-width": 2});
+    const g = el("g", {});
+    const c1 = document.createElementNS(ns, "circle"); Object.entries({cx: x(claimed), cy: y, r: 6, fill: "#fcfcfb", stroke: "#52514e", "stroke-width": 2}).forEach(([k, v]) => c1.setAttribute(k, v));
+    const c2 = document.createElementNS(ns, "circle"); Object.entries({cx: x(actual), cy: y, r: 7, fill: "#d03b3b", stroke: "#fcfcfb", "stroke-width": 2}).forEach(([k, v]) => c2.setAttribute(k, v));
+    const t = document.createElementNS(ns, "title"); t.textContent = `${name} mm: claimed ${claimed} mm, actual ${actual} mm (limit 1.5)`;
+    g.append(t, c1, c2);
+  });
+  el("circle", {cx: L + 6, cy: B + 58, r: 6, fill: "#fcfcfb", stroke: "#52514e", "stroke-width": 2});
+  el("text", {x: L + 18, y: B + 63, "font-size": 13, fill: "#52514e"}, "claimed by the model");
+  el("circle", {cx: L + 190, cy: B + 58, r: 7, fill: "#d03b3b"});
+  el("text", {x: L + 203, y: B + 63, "font-size": 13, fill: "#52514e"}, "recomputed by the verifier");
+  svg.setAttribute("viewBox", `0 0 880 ${B + 72}`);
+}
+
+function board() {
+  const root = document.getElementById("board");
+  const cols = [
+    {head: "cost, 7 cases", note: "USD", key: "cost", max: 0.8, fmt: v => "$" + (v < 0.1 ? v.toFixed(3) : v.toFixed(2))},
+    {head: "proposals verified", note: "share of 56", key: "verified", max: 100, fmt: v => v + "%"},
+    {head: "heavier than optimum", note: "mean regret", key: "regret", max: 3, fmt: v => v.toFixed(2) + "%"},
+    {head: "false passes", note: "claimed pass, failed physics", key: "fp", max: 8, fmt: v => String(v)},
+  ];
+  let html = `<div class="head">model &middot; mode</div>` + cols.map(c => `<div class="head">${c.head}<small>${c.note}</small></div>`).join("");
+  BOARD.forEach((r, i) => {
+    if (i && i % 2 === 0) html += `<div class="gap"></div>`;
+    const color = `var(--${r.kind})`;
+    html += `<div class="name" title="${r.model} ${r.kind}: ${r.solved} cases solved"><i style="background:${color}"></i>${r.model} <small>${r.kind}</small></div>`;
+    cols.forEach(c => {
+      const v = r[c.key], w = Math.max(v > 0 ? 3 : 0, (v / c.max) * 150);
+      const label = c.key === "fp" && v > 0 ? `<span class="flag">${v} &#9888;</span>` : c.fmt(v);
+      html += `<div class="cell" title="${r.model} ${r.kind}, ${c.head}: ${c.fmt(v)}"><span class="bar" style="width:${w}px;background:${color}"></span>${label}</div>`;
+    });
+  });
+  root.innerHTML = html;
+}
+
+function fit() {
+  const single = new URLSearchParams(location.search).get("p");
+  document.body.classList.toggle("single", !!single);
+  document.querySelectorAll(".frame").forEach(f => {
+    const p = f.querySelector(".poster");
+    if (single) { f.style.display = f.dataset.poster === single ? "" : "none"; p.style.transform = ""; f.style.height = ""; return; }
+    const s = Math.min(1, f.clientWidth / 1600);
+    p.style.transform = `scale(${s})`; f.style.height = 900 * s + "px";
+  });
+}
+slipChart(); board(); fit(); addEventListener("resize", fit);
+</script>
+</body>
+</html>

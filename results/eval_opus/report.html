@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Design Agent Eval</title><style>
+:root { --bg:#f7f7f5; --card:#fff; --text:#1c1c1a; --muted:#6b6b66; --line:#e3e3de;
+        --ok:#1f7a4d; --ok-bg:#e6f4ec; --bad:#b4372f; --bad-bg:#fbe9e7; --warn:#8a5a00; --warn-bg:#fdf3dc; }
+@media (prefers-color-scheme: dark) { :root { --bg:#151514; --card:#1f1f1d; --text:#ececea; --muted:#9a9a94;
+        --line:#33332f; --ok:#5cc791; --ok-bg:#16301f; --bad:#f08a80; --bad-bg:#3a1c19; --warn:#e8b54f; --warn-bg:#352a12; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 -apple-system, system-ui, sans-serif; }
+main { max-width:1180px; margin:0 auto; padding:32px 16px 64px; }
+h1 { font-size:24px; margin:0 0 4px; } h2 { font-size:17px; margin:32px 0 12px; }
+.muted { color:var(--muted); }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-top:20px; }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+.tile b { display:block; font-size:24px; font-variant-numeric:tabular-nums; }
+.tile.bad b { color:var(--bad); } .tile.ok b { color:var(--ok); } .tile.warn b { color:var(--warn); }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; }
+.selected { border-left:4px solid var(--ok); }
+.scroll { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; }
+table { border-collapse:collapse; width:100%; font-size:13px; font-variant-numeric:tabular-nums; }
+th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; white-space:nowrap; }
+th { color:var(--muted); font-weight:600; } td.wrap { white-space:normal; min-width:280px; }
+tr.false-pass { background:var(--bad-bg); } tr.is-selected { background:var(--ok-bg); }
+.pill { display:inline-block; padding:1px 8px; border-radius:99px; font-size:12px; font-weight:600; }
+.l-verified, .pass { color:var(--ok); background:var(--ok-bg); }
+.l-fails, .fail { color:var(--bad); background:var(--bad-bg); }
+.l-fragile, .l-not-manufacturable, .l-out-of-envelope { color:var(--warn); background:var(--warn-bg); }
+.f-false_pass { color:var(--bad); font-weight:600; } .f-claim_off, .f-out_of_bounds { color:var(--warn); }
+.matrix td:first-child { font-weight:600; }
+</style></head>
+<body><main><h1>Do design agents earn their cost?</h1>
+<p class="muted">Every proposer runs on every case. A case is solved when at least one proposal passes all seven requirements.
+Regret is how much heavier the chosen design is than the true optimum found by brute force.
+A false pass is a design the proposer claimed would pass that fails strength or stiffness. Crashes are recorded and left out of the scores.</p>
+<h2>Scoreboard</h2>
+<div class="scroll"><table><thead><tr><th>proposer</th><th>solved</th><th>errors</th><th>proposals</th><th>verified</th>
+<th>false pass rate</th><th>mean regret</th><th>tool calls</th><th>tokens</th><th>cost</th><th>seconds</th></tr></thead>
+<tbody><tr><td><b>naive</b></td><td>3 / 7</td><td>0</td><td>126</td><td>6%</td><td>6%</td><td>150%</td><td>0</td><td>0</td><td>-</td><td>0</td></tr>
+<tr><td><b>llm</b></td><td>7 / 7</td><td>0</td><td>56</td><td>98%</td><td>0%</td><td>0%</td><td>0</td><td>31,596</td><td>$0.47</td><td>206</td></tr>
+<tr><td><b>agent</b></td><td>7 / 7</td><td>0</td><td>56</td><td>100%</td><td>0%</td><td>0%</td><td>47</td><td>103,661</td><td>$0.77</td><td>204</td></tr></tbody></table></div>
+<h2>By case</h2>
+<div class="scroll"><table><thead><tr><th>case</th><th>proposer</th><th>chosen design</th><th>mass, g</th><th>optimum, g</th>
+<th>regret</th><th>proposals</th></tr></thead><tbody><tr><td>A</td><td>naive</td><td>Ti-6Al-4V 35 x 16</td><td>372</td><td>152</td><td>145%</td><td>2 / 18 verified, 1 false passes</td></tr><tr><td>B</td><td>naive</td><td>none</td><td>-</td><td>166</td><td>-</td><td>0 / 18 verified, 2 false passes</td></tr><tr><td>C</td><td>naive</td><td>Ti-6Al-4V 35 x 16</td><td>620</td><td>230</td><td>170%</td><td>3 / 18 verified, 0 false passes</td></tr><tr><td>D</td><td>naive</td><td>none</td><td>-</td><td>387</td><td>-</td><td>0 / 18 verified, 1 false passes</td></tr><tr><td>A</td><td>llm</td><td>Al 6061-T6 15 x 25</td><td>152</td><td>152</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>B</td><td>llm</td><td>Ti-6Al-4V 12.6 x 25</td><td>167</td><td>166</td><td>1%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>C</td><td>llm</td><td>Al 6061-T6 13.7 x 25</td><td>231</td><td>230</td><td>1%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>D</td><td>llm</td><td>Al 6061-T6 23.9 x 30</td><td>387</td><td>387</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>A</td><td>agent</td><td>Al 6061-T6 15 x 25</td><td>152</td><td>152</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>B</td><td>agent</td><td>Ti-6Al-4V 12.5 x 25</td><td>166</td><td>166</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>C</td><td>agent</td><td>Al 6061-T6 13.6 x 25</td><td>230</td><td>230</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>D</td><td>agent</td><td>Al 6061-T6 24 x 30</td><td>389</td><td>387</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>E</td><td>naive</td><td>Ti-6Al-4V 35 x 16</td><td>347</td><td>149</td><td>133%</td><td>2 / 18 verified, 3 false passes</td></tr><tr><td>F</td><td>naive</td><td>none</td><td>-</td><td>647</td><td>-</td><td>0 / 18 verified, 0 false passes</td></tr><tr><td>G</td><td>naive</td><td>none</td><td>-</td><td>43</td><td>-</td><td>0 / 18 verified, 0 false passes</td></tr><tr><td>E</td><td>llm</td><td>Ti-6Al-4V 12 x 20</td><td>149</td><td>149</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>F</td><td>llm</td><td>Steel 4130 69 x 8</td><td>650</td><td>647</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>G</td><td>llm</td><td>Ti-6Al-4V 20 x 6</td><td>43</td><td>43</td><td>0%</td><td>7 / 8 verified, 0 false passes</td></tr><tr><td>E</td><td>agent</td><td>Ti-6Al-4V 12 x 20</td><td>149</td><td>149</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>F</td><td>agent</td><td>Steel 4130 68.8 x 8</td><td>648</td><td>647</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr><tr><td>G</td><td>agent</td><td>Ti-6Al-4V 20 x 6</td><td>43</td><td>43</td><td>0%</td><td>8 / 8 verified, 0 false passes</td></tr></tbody></table></div>
+<p class="muted" style="margin-top:28px">Toy model: textbook cantilever formulas, typical handbook material values, illustrative factors of safety
+and stock sizes. It shows the pattern (propose, verify against physics, trace every decision to a requirement), not real engineering.</p>
+</main></body></html>

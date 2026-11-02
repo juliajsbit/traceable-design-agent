@@ -1,0 +1,1878 @@
+{
+  "requirement": {
+    "case": "A",
+    "part": "cantilever bracket, load at the tip",
+    "load_n": 2000.0,
+    "length_mm": 150.0,
+    "yield_factor": 1.25,
+    "ultimate_factor": 1.4,
+    "max_deflection_mm": 3.0,
+    "width_range_mm": [
+      10.0,
+      60.0
+    ],
+    "thickness_range_mm": [
+      3.0,
+      30.0
+    ],
+    "load_uncertainty": 0.1,
+    "thickness_tolerance_mm": 0.5,
+    "max_depth_to_width": 2.0
+  },
+  "proposer": "naive",
+  "model": null,
+  "rounds": 1,
+  "records": [
+    {
+      "proposal": {
+        "design": {
+          "material": "Al 6061-T6",
+          "width_mm": 20.0,
+          "thickness_mm": 10.0
+        },
+        "claimed_margin_yield": 21.08,
+        "claimed_deflection_mm": 19.593613933236572,
+        "claimed_mass_g": 81.0,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-01",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 10.0,
+          "stress_mpa": 899.9999999999999,
+          "margin_yield": -0.7546666666666666,
+          "margin_ultimate": -0.753968253968254,
+          "deflection_mm": 19.593613933236572
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 9.5,
+          "stress_mpa": 1096.9529085872575,
+          "margin_yield": -0.7987151515151515,
+          "margin_ultimate": -0.7981421356421357,
+          "deflection_mm": 25.13832958339143
+        },
+        "mass_g": 81.0,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS -0.75",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": false
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS -0.75",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": false
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "19.59 mm",
+            "limit": "<= 3 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 10 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 10 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.80, 25.14 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.50",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +21.08, actual -0.75"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-001 yield strength: MS -0.75 (needs MS >= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.75 (needs MS >= 0 at factor 1.4); REQ-003 tip deflection: 19.59 mm (needs <= 3 mm); REQ-006 robustness: MS -0.80, 25.14 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Al 6061-T6",
+          "width_mm": 20.0,
+          "thickness_mm": 16.0
+        },
+        "claimed_margin_yield": 34.328,
+        "claimed_deflection_mm": 4.783597151669085,
+        "claimed_mass_g": 129.6,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-02",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 16.0,
+          "stress_mpa": 351.5625,
+          "margin_yield": -0.37194666666666665,
+          "margin_ultimate": -0.37015873015873013,
+          "deflection_mm": 4.783597151669085
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 15.5,
+          "stress_mpa": 412.0707596253902,
+          "margin_yield": -0.464169696969697,
+          "margin_ultimate": -0.46264430014430014,
+          "deflection_mm": 5.787781632455501
+        },
+        "mass_g": 129.6,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS -0.37",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": false
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS -0.37",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": false
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "4.78 mm",
+            "limit": "<= 3 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 16 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 16 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.46, 5.79 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.80",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +34.33, actual -0.37"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-001 yield strength: MS -0.37 (needs MS >= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.37 (needs MS >= 0 at factor 1.4); REQ-003 tip deflection: 4.78 mm (needs <= 3 mm); REQ-006 robustness: MS -0.46, 5.79 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Al 6061-T6",
+          "width_mm": 20.0,
+          "thickness_mm": 22.0
+        },
+        "claimed_margin_yield": 47.576,
+        "claimed_deflection_mm": 1.8401215188990023,
+        "claimed_mass_g": 178.2,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-03",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 22.0,
+          "stress_mpa": 185.95041322314052,
+          "margin_yield": 0.1874133333333332,
+          "margin_ultimate": 0.19079365079365074,
+          "deflection_mm": 1.8401215188990023
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 21.5,
+          "stress_mpa": 214.16982152514876,
+          "margin_yield": 0.03095757575757574,
+          "margin_ultimate": 0.03389249639249625,
+          "deflection_mm": 2.168661911686793
+        },
+        "mass_g": 178.2,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +0.19",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +0.19",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "1.84 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 22 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 22 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": false
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +0.03, 2.17 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 1.10",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +47.58, actual +0.19"
+        }
+      ],
+      "status": "rejected",
+      "label": "not manufacturable",
+      "reason": "REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Al 6061-T6",
+          "width_mm": 35.0,
+          "thickness_mm": 10.0
+        },
+        "claimed_margin_yield": 37.63999999999999,
+        "claimed_deflection_mm": 11.196350818992324,
+        "claimed_mass_g": 141.75,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-04",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 10.0,
+          "stress_mpa": 514.2857142857142,
+          "margin_yield": -0.5706666666666667,
+          "margin_ultimate": -0.5694444444444444,
+          "deflection_mm": 11.196350818992324
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 9.5,
+          "stress_mpa": 626.8302334784329,
+          "margin_yield": -0.6477515151515152,
+          "margin_ultimate": -0.6467487373737373,
+          "deflection_mm": 14.364759761937961
+        },
+        "mass_g": 141.75,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS -0.57",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": false
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS -0.57",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": false
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "11.20 mm",
+            "limit": "<= 3 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 10 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 10 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.65, 14.36 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.29",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +37.64, actual -0.57"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-001 yield strength: MS -0.57 (needs MS >= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.57 (needs MS >= 0 at factor 1.4); REQ-003 tip deflection: 11.20 mm (needs <= 3 mm); REQ-006 robustness: MS -0.65, 14.36 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Al 6061-T6",
+          "width_mm": 35.0,
+          "thickness_mm": 16.0
+        },
+        "claimed_margin_yield": 60.824,
+        "claimed_deflection_mm": 2.733484086668048,
+        "claimed_mass_g": 226.8,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-05",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 16.0,
+          "stress_mpa": 200.89285714285714,
+          "margin_yield": 0.09909333333333348,
+          "margin_ultimate": 0.10222222222222221,
+          "deflection_mm": 2.733484086668048
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 15.5,
+          "stress_mpa": 235.46900550022298,
+          "margin_yield": -0.06229696969696963,
+          "margin_ultimate": -0.059627525252525126,
+          "deflection_mm": 3.3073037899745725
+        },
+        "mass_g": 226.8,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +0.10",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +0.10",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "2.73 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 16 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 16 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.06, 3.31 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.46",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +60.82, actual +0.10"
+        }
+      ],
+      "status": "rejected",
+      "label": "fragile",
+      "reason": "REQ-006 robustness: MS -0.06, 3.31 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Al 6061-T6",
+          "width_mm": 35.0,
+          "thickness_mm": 22.0
+        },
+        "claimed_margin_yield": 84.00800000000001,
+        "claimed_deflection_mm": 1.0514980107994298,
+        "claimed_mass_g": 311.85,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-06",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 22.0,
+          "stress_mpa": 106.25737898465171,
+          "margin_yield": 1.0779733333333334,
+          "margin_ultimate": 1.0838888888888887,
+          "deflection_mm": 1.0514980107994298
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 21.5,
+          "stress_mpa": 122.38275515722786,
+          "margin_yield": 0.8041757575757575,
+          "margin_ultimate": 0.8093118686868686,
+          "deflection_mm": 1.239235378106739
+        },
+        "mass_g": 311.85,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +1.08",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +1.08",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "1.05 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 22 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 22 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": false
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +0.80, 1.24 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.63",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +84.01, actual +1.08"
+        }
+      ],
+      "status": "rejected",
+      "label": "not manufacturable",
+      "reason": "REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Ti-6Al-4V",
+          "width_mm": 20.0,
+          "thickness_mm": 10.0
+        },
+        "claimed_margin_yield": 69.4,
+        "claimed_deflection_mm": 11.862917398945514,
+        "claimed_mass_g": 132.9,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-07",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 10.0,
+          "stress_mpa": 899.9999999999999,
+          "margin_yield": -0.21777777777777763,
+          "margin_ultimate": -0.24603174603174593,
+          "deflection_mm": 11.862917398945514
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 9.5,
+          "stress_mpa": 1096.9529085872575,
+          "margin_yield": -0.3582222222222222,
+          "margin_ultimate": -0.3814033189033188,
+          "deflection_mm": 15.219955257431193
+        },
+        "mass_g": 132.9,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS -0.22",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": false
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS -0.25",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": false
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "11.86 mm",
+            "limit": "<= 3 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 10 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 10 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.36, 15.22 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.50",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +69.40, actual -0.22"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-001 yield strength: MS -0.22 (needs MS >= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.25 (needs MS >= 0 at factor 1.4); REQ-003 tip deflection: 11.86 mm (needs <= 3 mm); REQ-006 robustness: MS -0.36, 15.22 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Ti-6Al-4V",
+          "width_mm": 20.0,
+          "thickness_mm": 16.0
+        },
+        "claimed_margin_yield": 111.64000000000001,
+        "claimed_deflection_mm": 2.8962200681019326,
+        "claimed_mass_g": 212.64,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-08",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 16.0,
+          "stress_mpa": 351.5625,
+          "margin_yield": 1.0024888888888888,
+          "margin_ultimate": 0.9301587301587304,
+          "deflection_mm": 2.8962200681019326
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 15.5,
+          "stress_mpa": 412.0707596253902,
+          "margin_yield": 0.7084444444444444,
+          "margin_ultimate": 0.6467352092352094,
+          "deflection_mm": 3.5042017089295605
+        },
+        "mass_g": 212.64,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +1.00",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +0.93",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "2.90 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 16 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 16 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +0.71, 3.50 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.80",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +111.64, actual +1.00"
+        }
+      ],
+      "status": "rejected",
+      "label": "fragile",
+      "reason": "REQ-006 robustness: MS +0.71, 3.50 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Ti-6Al-4V",
+          "width_mm": 20.0,
+          "thickness_mm": 22.0
+        },
+        "claimed_margin_yield": 153.88,
+        "claimed_deflection_mm": 1.1140981779625767,
+        "claimed_mass_g": 292.38,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-09",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 22.0,
+          "stress_mpa": 185.95041322314052,
+          "margin_yield": 2.7859555555555553,
+          "margin_ultimate": 2.649206349206349,
+          "deflection_mm": 1.1140981779625767
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 21.5,
+          "stress_mpa": 214.16982152514876,
+          "margin_yield": 2.287111111111111,
+          "margin_ultimate": 2.1683802308802305,
+          "deflection_mm": 1.3130123525063273
+        },
+        "mass_g": 292.38,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +2.79",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +2.65",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "1.11 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 22 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 22 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": false
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +2.29, 1.31 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 1.10",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +153.88, actual +2.79"
+        }
+      ],
+      "status": "rejected",
+      "label": "not manufacturable",
+      "reason": "REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Ti-6Al-4V",
+          "width_mm": 35.0,
+          "thickness_mm": 10.0
+        },
+        "claimed_margin_yield": 122.19999999999999,
+        "claimed_deflection_mm": 6.778809942254578,
+        "claimed_mass_g": 232.575,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-10",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 10.0,
+          "stress_mpa": 514.2857142857142,
+          "margin_yield": 0.36888888888888904,
+          "margin_ultimate": 0.31944444444444464,
+          "deflection_mm": 6.778809942254578
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 9.5,
+          "stress_mpa": 626.8302334784329,
+          "margin_yield": 0.12311111111111117,
+          "margin_ultimate": 0.08254419191919204,
+          "deflection_mm": 8.69711728996068
+        },
+        "mass_g": 232.575,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +0.37",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +0.32",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "6.78 mm",
+            "limit": "<= 3 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 10 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 10 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +0.12, 8.70 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.29",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +122.20, actual +0.37"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-003 tip deflection: 6.78 mm (needs <= 3 mm); REQ-006 robustness: MS +0.12, 8.70 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Ti-6Al-4V",
+          "width_mm": 35.0,
+          "thickness_mm": 16.0
+        },
+        "claimed_margin_yield": 196.11999999999998,
+        "claimed_deflection_mm": 1.654982896058247,
+        "claimed_mass_g": 372.12,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-11",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 16.0,
+          "stress_mpa": 200.89285714285714,
+          "margin_yield": 2.504355555555556,
+          "margin_ultimate": 2.3777777777777778,
+          "deflection_mm": 1.654982896058247
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 15.5,
+          "stress_mpa": 235.46900550022298,
+          "margin_yield": 1.9897777777777779,
+          "margin_ultimate": 1.8817866161616164,
+          "deflection_mm": 2.002400976531177
+        },
+        "mass_g": 372.12,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +2.50",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +2.38",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "1.65 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 16 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 16 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +1.99, 2.00 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.46",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": true
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +196.12, actual +2.50"
+        }
+      ],
+      "status": "accepted",
+      "label": "verified",
+      "reason": "all requirements met; yield MS +2.50, worst-case MS +1.99"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Ti-6Al-4V",
+          "width_mm": 35.0,
+          "thickness_mm": 22.0
+        },
+        "claimed_margin_yield": 270.04,
+        "claimed_deflection_mm": 0.6366275302643296,
+        "claimed_mass_g": 511.665,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-12",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 22.0,
+          "stress_mpa": 106.25737898465171,
+          "margin_yield": 5.625422222222222,
+          "margin_ultimate": 5.386111111111111,
+          "deflection_mm": 0.6366275302643296
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 21.5,
+          "stress_mpa": 122.38275515722786,
+          "margin_yield": 4.7524444444444445,
+          "margin_ultimate": 4.544665404040403,
+          "deflection_mm": 0.7502927728607584
+        },
+        "mass_g": 511.665,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +5.63",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +5.39",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "0.64 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 22 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 22 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": false
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +4.75, 0.75 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.63",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +270.04, actual +5.63"
+        }
+      ],
+      "status": "rejected",
+      "label": "not manufacturable",
+      "reason": "REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Steel 4130",
+          "width_mm": 20.0,
+          "thickness_mm": 10.0
+        },
+        "claimed_margin_yield": 33.8,
+        "claimed_deflection_mm": 6.585365853658534,
+        "claimed_mass_g": 235.5,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-13",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 10.0,
+          "stress_mpa": 899.9999999999999,
+          "margin_yield": -0.6133333333333333,
+          "margin_ultimate": -0.46825396825396814,
+          "deflection_mm": 6.585365853658534
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 9.5,
+          "stress_mpa": 1096.9529085872575,
+          "margin_yield": -0.6827575757575757,
+          "margin_ultimate": -0.5637265512265512,
+          "deflection_mm": 8.448931259978878
+        },
+        "mass_g": 235.5,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS -0.61",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": false
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS -0.47",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": false
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "6.59 mm",
+            "limit": "<= 3 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 10 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 10 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.68, 8.45 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.50",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +33.80, actual -0.61"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-001 yield strength: MS -0.61 (needs MS >= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.47 (needs MS >= 0 at factor 1.4); REQ-003 tip deflection: 6.59 mm (needs <= 3 mm); REQ-006 robustness: MS -0.68, 8.45 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Steel 4130",
+          "width_mm": 20.0,
+          "thickness_mm": 16.0
+        },
+        "claimed_margin_yield": 54.68000000000001,
+        "claimed_deflection_mm": 1.6077553353658531,
+        "claimed_mass_g": 376.8,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-14",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 16.0,
+          "stress_mpa": 351.5625,
+          "margin_yield": -0.010133333333333328,
+          "margin_ultimate": 0.3612698412698414,
+          "deflection_mm": 1.6077553353658531
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 15.5,
+          "stress_mpa": 412.0707596253902,
+          "margin_yield": -0.15548484848484856,
+          "margin_ultimate": 0.16138167388167401,
+          "deflection_mm": 1.945259290127727
+        },
+        "mass_g": 376.8,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS -0.01",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": false
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +0.36",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "1.61 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 16 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 16 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.16, 1.95 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.80",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "false_pass",
+          "message": "claimed it passes, physics says: REQ-001 MS -0.01"
+        },
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +54.68, actual -0.01"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-001 yield strength: MS -0.01 (needs MS >= 0 at factor 1.25); REQ-006 robustness: MS -0.16, 1.95 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Steel 4130",
+          "width_mm": 20.0,
+          "thickness_mm": 22.0
+        },
+        "claimed_margin_yield": 75.56,
+        "claimed_deflection_mm": 0.6184603544006889,
+        "claimed_mass_g": 518.1,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-15",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 22.0,
+          "stress_mpa": 185.95041322314052,
+          "margin_yield": 0.8714666666666666,
+          "margin_ultimate": 1.5736507936507937,
+          "deflection_mm": 0.6184603544006889
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 21.5,
+          "stress_mpa": 214.16982152514876,
+          "margin_yield": 0.6248787878787878,
+          "margin_ultimate": 1.234541847041847,
+          "deflection_mm": 0.7288819790986343
+        },
+        "mass_g": 518.1,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +0.87",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +1.57",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "0.62 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "20 x 22 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 22 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": false
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +0.62, 0.73 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 1.10",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +75.56, actual +0.87"
+        }
+      ],
+      "status": "rejected",
+      "label": "not manufacturable",
+      "reason": "REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Steel 4130",
+          "width_mm": 35.0,
+          "thickness_mm": 10.0
+        },
+        "claimed_margin_yield": 59.89999999999999,
+        "claimed_deflection_mm": 3.763066202090591,
+        "claimed_mass_g": 412.125,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-16",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 10.0,
+          "stress_mpa": 514.2857142857142,
+          "margin_yield": -0.32333333333333325,
+          "margin_ultimate": -0.06944444444444431,
+          "deflection_mm": 3.763066202090591
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 9.5,
+          "stress_mpa": 626.8302334784329,
+          "margin_yield": -0.4448257575757575,
+          "margin_ultimate": -0.23652146464646462,
+          "deflection_mm": 4.827960719987929
+        },
+        "mass_g": 412.125,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS -0.32",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": false
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS -0.07",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": false
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "3.76 mm",
+            "limit": "<= 3 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 10 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 10 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS -0.44, 4.83 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": false
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.29",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +59.90, actual -0.32"
+        }
+      ],
+      "status": "rejected",
+      "label": "fails",
+      "reason": "REQ-001 yield strength: MS -0.32 (needs MS >= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.07 (needs MS >= 0 at factor 1.4); REQ-003 tip deflection: 3.76 mm (needs <= 3 mm); REQ-006 robustness: MS -0.44, 4.83 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Steel 4130",
+          "width_mm": 35.0,
+          "thickness_mm": 16.0
+        },
+        "claimed_margin_yield": 96.44,
+        "claimed_deflection_mm": 0.9187173344947732,
+        "claimed_mass_g": 659.4,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-17",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 16.0,
+          "stress_mpa": 200.89285714285714,
+          "margin_yield": 0.7322666666666668,
+          "margin_ultimate": 1.382222222222222,
+          "deflection_mm": 0.9187173344947732
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 15.5,
+          "stress_mpa": 235.46900550022298,
+          "margin_yield": 0.47790151515151513,
+          "margin_ultimate": 1.0324179292929294,
+          "deflection_mm": 1.1115767372158438
+        },
+        "mass_g": 659.4,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +0.73",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +1.38",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "0.92 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 16 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 16 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": true
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +0.48, 1.11 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.46",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": true
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +96.44, actual +0.73"
+        }
+      ],
+      "status": "accepted",
+      "label": "verified",
+      "reason": "all requirements met; yield MS +0.73, worst-case MS +0.48"
+    },
+    {
+      "proposal": {
+        "design": {
+          "material": "Steel 4130",
+          "width_mm": 35.0,
+          "thickness_mm": 22.0
+        },
+        "claimed_margin_yield": 132.98000000000002,
+        "claimed_deflection_mm": 0.3534059168003937,
+        "claimed_mass_g": 906.675,
+        "rationale": "grid search sized for tensile stress",
+        "id": "r1-18",
+        "round": 1
+      },
+      "check": {
+        "nominal": {
+          "load_n": 2000.0,
+          "thickness_mm": 22.0,
+          "stress_mpa": 106.25737898465171,
+          "margin_yield": 2.2750666666666666,
+          "margin_ultimate": 3.5038888888888886,
+          "deflection_mm": 0.3534059168003937
+        },
+        "worst_case": {
+          "load_n": 2200.0,
+          "thickness_mm": 21.5,
+          "stress_mpa": 122.38275515722786,
+          "margin_yield": 1.843537878787879,
+          "margin_ultimate": 2.910448232323232,
+          "deflection_mm": 0.41650398805636246
+        },
+        "mass_g": 906.675,
+        "results": [
+          {
+            "id": "REQ-001",
+            "title": "Yield strength",
+            "method": "analysis",
+            "value": "MS +2.28",
+            "limit": "MS >= 0 at factor 1.25",
+            "passed": true
+          },
+          {
+            "id": "REQ-002",
+            "title": "Ultimate strength",
+            "method": "analysis",
+            "value": "MS +3.50",
+            "limit": "MS >= 0 at factor 1.4",
+            "passed": true
+          },
+          {
+            "id": "REQ-003",
+            "title": "Tip deflection",
+            "method": "analysis",
+            "value": "0.35 mm",
+            "limit": "<= 3 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-004",
+            "title": "Envelope",
+            "method": "inspection",
+            "value": "35 x 22 mm",
+            "limit": "w 10-60, t 3-30 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-005",
+            "title": "Standard plate stock",
+            "method": "inspection",
+            "value": "t 22 mm",
+            "limit": "t is a stock plate thickness",
+            "passed": false
+          },
+          {
+            "id": "REQ-006",
+            "title": "Robustness",
+            "method": "analysis",
+            "value": "MS +1.84, 0.42 mm",
+            "limit": "REQ-001..003 hold at +10% load, -0.5 mm",
+            "passed": true
+          },
+          {
+            "id": "REQ-007",
+            "title": "Proportions",
+            "method": "inspection",
+            "value": "t/w 0.63",
+            "limit": "<= 2 (lateral stability proxy)",
+            "passed": true
+          }
+        ],
+        "passes": false
+      },
+      "findings": [
+        {
+          "kind": "claim_off",
+          "message": "yield margin: claimed +132.98, actual +2.28"
+        }
+      ],
+      "status": "rejected",
+      "label": "not manufacturable",
+      "reason": "REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)"
+    }
+  ],
+  "selected_id": "r1-11",
+  "selection_reason": "lightest of 2 verified designs at 372 g; lighter options were rejected: r1-01 81 g (fails), r1-02 130 g (fails), r1-07 133 g (fails), r1-04 142 g (fails)",
+  "usage": {
+    "llm_calls": 0,
+    "tool_calls": 0,
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cost_usd": null
+  },
+  "seconds": 0.0,
+  "created_at": "2026-10-31T04:33:30+00:00"
+}

@@ -1,0 +1,206 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Design Trace A</title><style>
+:root { --bg:#f7f7f5; --card:#fff; --text:#1c1c1a; --muted:#6b6b66; --line:#e3e3de;
+        --ok:#1f7a4d; --ok-bg:#e6f4ec; --bad:#b4372f; --bad-bg:#fbe9e7; --warn:#8a5a00; --warn-bg:#fdf3dc; }
+@media (prefers-color-scheme: dark) { :root { --bg:#151514; --card:#1f1f1d; --text:#ececea; --muted:#9a9a94;
+        --line:#33332f; --ok:#5cc791; --ok-bg:#16301f; --bad:#f08a80; --bad-bg:#3a1c19; --warn:#e8b54f; --warn-bg:#352a12; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:15px/1.5 -apple-system, system-ui, sans-serif; }
+main { max-width:1180px; margin:0 auto; padding:32px 16px 64px; }
+h1 { font-size:24px; margin:0 0 4px; } h2 { font-size:17px; margin:32px 0 12px; }
+.muted { color:var(--muted); }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-top:20px; }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+.tile b { display:block; font-size:24px; font-variant-numeric:tabular-nums; }
+.tile.bad b { color:var(--bad); } .tile.ok b { color:var(--ok); } .tile.warn b { color:var(--warn); }
+.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px; }
+.selected { border-left:4px solid var(--ok); }
+.scroll { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:10px; }
+table { border-collapse:collapse; width:100%; font-size:13px; font-variant-numeric:tabular-nums; }
+th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; white-space:nowrap; }
+th { color:var(--muted); font-weight:600; } td.wrap { white-space:normal; min-width:280px; }
+tr.false-pass { background:var(--bad-bg); } tr.is-selected { background:var(--ok-bg); }
+.pill { display:inline-block; padding:1px 8px; border-radius:99px; font-size:12px; font-weight:600; }
+.l-verified, .pass { color:var(--ok); background:var(--ok-bg); }
+.l-fails, .fail { color:var(--bad); background:var(--bad-bg); }
+.l-fragile, .l-not-manufacturable, .l-out-of-envelope { color:var(--warn); background:var(--warn-bg); }
+.f-false_pass { color:var(--bad); font-weight:600; } .f-claim_off, .f-out_of_bounds { color:var(--warn); }
+.matrix td:first-child { font-weight:600; }
+</style></head>
+<body><main><h1>Design decision trace, case A</h1>
+<p class="muted">cantilever bracket, load at the tip: 2000 N at 150 mm. Proposer: naive, 1 round(s),
+0 s. 2026-10-31T04:33:30+00:00</p>
+<div class="tiles">
+<div class="tile"><span class="muted">proposals</span><b>18</b></div>
+<div class="tile ok"><span class="muted">verified</span><b>2</b></div>
+<div class="tile"><span class="muted">fail physics</span><b>8</b></div>
+<div class="tile warn"><span class="muted">fragile</span><b>2</b></div>
+<div class="tile warn"><span class="muted">no stock plate</span><b>6</b></div>
+<div class="tile bad"><span class="muted">false passes caught</span><b>1</b></div>
+</div>
+<h2>Selected design</h2><div class="card selected"><b>r1-11: Ti-6Al-4V, 35 x 16 mm, 372 g</b>
+<p>lightest of 2 verified designs at 372 g; lighter options were rejected: r1-01 81 g (fails), r1-02 130 g (fails), r1-07 133 g (fails), r1-04 142 g (fails).</p>
+<p class="muted">Root bending stress 201 MPa at 2000 N, 235 MPa in the worst case
+(2200 N, 15.5 mm plate). Every value below is computed, not taken from the proposer.
+Proposer's rationale: "grid search sized for tensile stress"</p></div>
+<h2>Verification matrix for r1-11</h2><div class="scroll"><table class="matrix"><thead><tr><th>requirement</th><th>title</th><th>method</th>
+<th>result</th><th>limit</th><th>status</th></tr></thead><tbody><tr><td>REQ-001</td><td>Yield strength</td><td>analysis</td><td>MS +2.50</td><td>MS &gt;= 0 at factor 1.25</td><td><span class="pill pass">pass</span></td></tr>
+<tr><td>REQ-002</td><td>Ultimate strength</td><td>analysis</td><td>MS +2.38</td><td>MS &gt;= 0 at factor 1.4</td><td><span class="pill pass">pass</span></td></tr>
+<tr><td>REQ-003</td><td>Tip deflection</td><td>analysis</td><td>1.65 mm</td><td>&lt;= 3 mm</td><td><span class="pill pass">pass</span></td></tr>
+<tr><td>REQ-004</td><td>Envelope</td><td>inspection</td><td>35 x 16 mm</td><td>w 10-60, t 3-30 mm</td><td><span class="pill pass">pass</span></td></tr>
+<tr><td>REQ-005</td><td>Standard plate stock</td><td>inspection</td><td>t 16 mm</td><td>t is a stock plate thickness</td><td><span class="pill pass">pass</span></td></tr>
+<tr><td>REQ-006</td><td>Robustness</td><td>analysis</td><td>MS +1.99, 2.00 mm</td><td>REQ-001..003 hold at +10% load, -0.5 mm</td><td><span class="pill pass">pass</span></td></tr>
+<tr><td>REQ-007</td><td>Proportions</td><td>inspection</td><td>t/w 0.46</td><td>&lt;= 2 (lateral stability proxy)</td><td><span class="pill pass">pass</span></td></tr></tbody></table></div>
+<h2>Every proposal</h2>
+<p class="muted">Values are claimed / verified. Worst case is +10% load and a 0.5 mm thinner plate.
+A red row is a design the proposer said would pass and the physics says would not.</p>
+<div class="scroll"><table><thead><tr><th>id</th><th>material</th><th>w x t, mm</th><th>yield MS</th><th>worst-case MS</th>
+<th>deflection, mm</th><th>mass, g</th><th>label</th><th>reason and findings</th></tr></thead><tbody>
+<tr class="">
+<td>r1-01</td><td>Al 6061-T6</td><td>20 x 10</td>
+<td>+21.08 / -0.75</td>
+<td>-0.80</td>
+<td>19.59 / 19.59</td>
+<td>81 / 81</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-001 yield strength: MS -0.75 (needs MS &gt;= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.75 (needs MS &gt;= 0 at factor 1.4); REQ-003 tip deflection: 19.59 mm (needs &lt;= 3 mm); REQ-006 robustness: MS -0.80, 25.14 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +21.08, actual -0.75</td></tr>
+<tr class="">
+<td>r1-02</td><td>Al 6061-T6</td><td>20 x 16</td>
+<td>+34.33 / -0.37</td>
+<td>-0.46</td>
+<td>4.78 / 4.78</td>
+<td>130 / 130</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-001 yield strength: MS -0.37 (needs MS &gt;= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.37 (needs MS &gt;= 0 at factor 1.4); REQ-003 tip deflection: 4.78 mm (needs &lt;= 3 mm); REQ-006 robustness: MS -0.46, 5.79 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +34.33, actual -0.37</td></tr>
+<tr class="">
+<td>r1-03</td><td>Al 6061-T6</td><td>20 x 22</td>
+<td>+47.58 / +0.19</td>
+<td>+0.03</td>
+<td>1.84 / 1.84</td>
+<td>178 / 178</td>
+<td><span class="pill l-not-manufacturable">not manufacturable</span></td>
+<td class="wrap">REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +47.58, actual +0.19</td></tr>
+<tr class="">
+<td>r1-04</td><td>Al 6061-T6</td><td>35 x 10</td>
+<td>+37.64 / -0.57</td>
+<td>-0.65</td>
+<td>11.20 / 11.20</td>
+<td>142 / 142</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-001 yield strength: MS -0.57 (needs MS &gt;= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.57 (needs MS &gt;= 0 at factor 1.4); REQ-003 tip deflection: 11.20 mm (needs &lt;= 3 mm); REQ-006 robustness: MS -0.65, 14.36 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +37.64, actual -0.57</td></tr>
+<tr class="">
+<td>r1-05</td><td>Al 6061-T6</td><td>35 x 16</td>
+<td>+60.82 / +0.10</td>
+<td>-0.06</td>
+<td>2.73 / 2.73</td>
+<td>227 / 227</td>
+<td><span class="pill l-fragile">fragile</span></td>
+<td class="wrap">REQ-006 robustness: MS -0.06, 3.31 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +60.82, actual +0.10</td></tr>
+<tr class="">
+<td>r1-06</td><td>Al 6061-T6</td><td>35 x 22</td>
+<td>+84.01 / +1.08</td>
+<td>+0.80</td>
+<td>1.05 / 1.05</td>
+<td>312 / 312</td>
+<td><span class="pill l-not-manufacturable">not manufacturable</span></td>
+<td class="wrap">REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +84.01, actual +1.08</td></tr>
+<tr class="">
+<td>r1-07</td><td>Ti-6Al-4V</td><td>20 x 10</td>
+<td>+69.40 / -0.22</td>
+<td>-0.36</td>
+<td>11.86 / 11.86</td>
+<td>133 / 133</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-001 yield strength: MS -0.22 (needs MS &gt;= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.25 (needs MS &gt;= 0 at factor 1.4); REQ-003 tip deflection: 11.86 mm (needs &lt;= 3 mm); REQ-006 robustness: MS -0.36, 15.22 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +69.40, actual -0.22</td></tr>
+<tr class="">
+<td>r1-08</td><td>Ti-6Al-4V</td><td>20 x 16</td>
+<td>+111.64 / +1.00</td>
+<td>+0.71</td>
+<td>2.90 / 2.90</td>
+<td>213 / 213</td>
+<td><span class="pill l-fragile">fragile</span></td>
+<td class="wrap">REQ-006 robustness: MS +0.71, 3.50 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +111.64, actual +1.00</td></tr>
+<tr class="">
+<td>r1-09</td><td>Ti-6Al-4V</td><td>20 x 22</td>
+<td>+153.88 / +2.79</td>
+<td>+2.29</td>
+<td>1.11 / 1.11</td>
+<td>292 / 292</td>
+<td><span class="pill l-not-manufacturable">not manufacturable</span></td>
+<td class="wrap">REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +153.88, actual +2.79</td></tr>
+<tr class="">
+<td>r1-10</td><td>Ti-6Al-4V</td><td>35 x 10</td>
+<td>+122.20 / +0.37</td>
+<td>+0.12</td>
+<td>6.78 / 6.78</td>
+<td>233 / 233</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-003 tip deflection: 6.78 mm (needs &lt;= 3 mm); REQ-006 robustness: MS +0.12, 8.70 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +122.20, actual +0.37</td></tr>
+<tr class="is-selected">
+<td>r1-11</td><td>Ti-6Al-4V</td><td>35 x 16</td>
+<td>+196.12 / +2.50</td>
+<td>+1.99</td>
+<td>1.65 / 1.65</td>
+<td>372 / 372</td>
+<td><span class="pill l-verified">verified</span></td>
+<td class="wrap">all requirements met; yield MS +2.50, worst-case MS +1.99<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +196.12, actual +2.50</td></tr>
+<tr class="">
+<td>r1-12</td><td>Ti-6Al-4V</td><td>35 x 22</td>
+<td>+270.04 / +5.63</td>
+<td>+4.75</td>
+<td>0.64 / 0.64</td>
+<td>512 / 512</td>
+<td><span class="pill l-not-manufacturable">not manufacturable</span></td>
+<td class="wrap">REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +270.04, actual +5.63</td></tr>
+<tr class="">
+<td>r1-13</td><td>Steel 4130</td><td>20 x 10</td>
+<td>+33.80 / -0.61</td>
+<td>-0.68</td>
+<td>6.59 / 6.59</td>
+<td>236 / 236</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-001 yield strength: MS -0.61 (needs MS &gt;= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.47 (needs MS &gt;= 0 at factor 1.4); REQ-003 tip deflection: 6.59 mm (needs &lt;= 3 mm); REQ-006 robustness: MS -0.68, 8.45 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +33.80, actual -0.61</td></tr>
+<tr class="false-pass">
+<td>r1-14</td><td>Steel 4130</td><td>20 x 16</td>
+<td>+54.68 / -0.01</td>
+<td>-0.16</td>
+<td>1.61 / 1.61</td>
+<td>377 / 377</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-001 yield strength: MS -0.01 (needs MS &gt;= 0 at factor 1.25); REQ-006 robustness: MS -0.16, 1.95 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-false_pass">false_pass</span>: claimed it passes, physics says: REQ-001 MS -0.01<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +54.68, actual -0.01</td></tr>
+<tr class="">
+<td>r1-15</td><td>Steel 4130</td><td>20 x 22</td>
+<td>+75.56 / +0.87</td>
+<td>+0.62</td>
+<td>0.62 / 0.62</td>
+<td>518 / 518</td>
+<td><span class="pill l-not-manufacturable">not manufacturable</span></td>
+<td class="wrap">REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +75.56, actual +0.87</td></tr>
+<tr class="">
+<td>r1-16</td><td>Steel 4130</td><td>35 x 10</td>
+<td>+59.90 / -0.32</td>
+<td>-0.44</td>
+<td>3.76 / 3.76</td>
+<td>412 / 412</td>
+<td><span class="pill l-fails">fails</span></td>
+<td class="wrap">REQ-001 yield strength: MS -0.32 (needs MS &gt;= 0 at factor 1.25); REQ-002 ultimate strength: MS -0.07 (needs MS &gt;= 0 at factor 1.4); REQ-003 tip deflection: 3.76 mm (needs &lt;= 3 mm); REQ-006 robustness: MS -0.44, 4.83 mm (needs REQ-001..003 hold at +10% load, -0.5 mm)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +59.90, actual -0.32</td></tr>
+<tr class="">
+<td>r1-17</td><td>Steel 4130</td><td>35 x 16</td>
+<td>+96.44 / +0.73</td>
+<td>+0.48</td>
+<td>0.92 / 0.92</td>
+<td>659 / 659</td>
+<td><span class="pill l-verified">verified</span></td>
+<td class="wrap">all requirements met; yield MS +0.73, worst-case MS +0.48<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +96.44, actual +0.73</td></tr>
+<tr class="">
+<td>r1-18</td><td>Steel 4130</td><td>35 x 22</td>
+<td>+132.98 / +2.28</td>
+<td>+1.84</td>
+<td>0.35 / 0.35</td>
+<td>907 / 907</td>
+<td><span class="pill l-not-manufacturable">not manufacturable</span></td>
+<td class="wrap">REQ-005 standard plate stock: t 22 mm (needs t is a stock plate thickness)<br><span class="f-claim_off">claim_off</span>: yield margin: claimed +132.98, actual +2.28</td></tr>
+</tbody></table></div>
+<p class="muted" style="margin-top:28px">Toy model: textbook cantilever formulas, typical handbook material values, illustrative factors of safety
+and stock sizes. It shows the pattern (propose, verify against physics, trace every decision to a requirement), not real engineering.</p>
+</main></body></html>
