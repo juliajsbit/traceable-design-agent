@@ -20,12 +20,12 @@ CASES = {
 STANDARD, HARD = ["A", "B", "C", "D"], ["E", "F", "G"]
 
 
-def oracle(req: Requirement) -> tuple[Design, float] | None:
+def oracle(req: Requirement, materials=None) -> tuple[Design, float] | None:
     """Every material x every width in 0.1 mm steps x every stock thickness. Returns the lightest design that passes.
     Widths are machined, so any width is allowed; 0.1 mm is finer than a drawing tolerance would care about."""
     (wmin, wmax), (tmin, tmax) = req.width_range_mm, req.thickness_range_mm
     best = None
-    for material in MATERIALS:
+    for material in materials or MATERIALS:
         for tenths in range(round(wmin * 10), round(wmax * 10) + 1):
             width = tenths / 10
             for thickness in (t for t in STOCK_THICKNESSES_MM if tmin <= t <= tmax):

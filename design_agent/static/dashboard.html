@@ -1,0 +1,1373 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Team Live</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f1f0ec; --surface: #fcfcfb; --raised: #f6f5f2; --line: #dddcd7;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #7a7974;
+  --al: #2a78d6; --ti: #eb6834; --steel: #1baf7a; --lead: #6250d6;
+  --good: #0ca30c; --good-ink: #006300; --good-bg: #e6f4e6;
+  --bad: #d03b3b; --bad-bg: #fbe9e7; --warn: #fab219; --warn-ink: #8a5a00; --warn-bg: #fdf3dc;
+  --grid: #e6e5e0; --shade: rgba(208, 59, 59, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111110; --surface: #1a1a19; --raised: #222220; --line: #33332f;
+    --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e88;
+    --al: #3987e5; --ti: #d95926; --steel: #199e70; --lead: #9085e9;
+    --good-ink: #5cc791; --good-bg: #16301f; --bad-bg: #3a1c19; --warn-ink: #e8b54f; --warn-bg: #352a12;
+    --grid: #2a2a27; --shade: rgba(208, 59, 59, .10);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111110; --surface: #1a1a19; --raised: #222220; --line: #33332f;
+  --text: #f0efec; --text-2: #c3c2b7; --muted: #8f8e88;
+  --al: #3987e5; --ti: #d95926; --steel: #199e70; --lead: #9085e9;
+  --good-ink: #5cc791; --good-bg: #16301f; --bad-bg: #3a1c19; --warn-ink: #e8b54f; --warn-bg: #352a12;
+  --grid: #2a2a27; --shade: rgba(208, 59, 59, .10);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, "Helvetica Neue", system-ui, sans-serif; }
+main { max-width: 1480px; margin: 0 auto; padding: 14px 16px 24px; display: grid; gap: 10px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+h1 { font-size: 22px; margin: 0; letter-spacing: -.01em; }
+.muted { color: var(--muted); }
+.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+select, button { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; }
+button { cursor: pointer; font-weight: 600; }
+button.primary { background: var(--text); color: var(--surface); border-color: var(--text); }
+button:disabled { opacity: .5; cursor: default; }
+.sep { width: 1px; height: 24px; background: var(--line); }
+.counters { display: grid; grid-template-columns: repeat(6, 1fr); }
+.counter { padding: 7px 16px; border-left: 1px solid var(--line); }
+.counter:first-child { border-left: 0; }
+.counter span { color: var(--muted); font-size: 12px; }
+.counter b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+.brief { padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 99px; background: var(--raised); color: var(--text-2); border: 1px solid var(--line); }
+.team { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 12px; }
+.lane { display: grid; grid-template-rows: auto auto 1fr; height: 280px; overflow: hidden; }
+.lane.graphcard { grid-template-rows: auto 1fr auto; }
+.lane header { padding: 10px 14px 8px; border-bottom: 1px solid var(--line); }
+.lane .name { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; }
+.dot { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+.status { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.status.working::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: pulse 1s infinite; }
+.status.working { color: var(--text); }
+.status.done { color: var(--good-ink); }
+.status.error { color: var(--bad); }
+@keyframes pulse { 50% { opacity: .2; } }
+.stats { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.note { padding: 8px 14px; font-size: 12.5px; color: var(--text-2); background: var(--raised); border-bottom: 1px solid var(--line);
+        display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.note:empty { display: none; }
+.log { overflow-y: auto; padding: 6px 0; }
+.item { padding: 5px 14px; font-size: 13px; display: grid; gap: 2px; animation: slide .35s ease-out; }
+.item + .item { border-top: 1px dashed var(--line); }
+.item .row { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; }
+.item .why { font-size: 12px; color: var(--muted); }
+.item.turn { color: var(--muted); font-size: 12px; }
+@keyframes slide { from { opacity: 0; transform: translateY(-6px); } }
+.pill { font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+.l-verified { color: var(--good-ink); background: var(--good-bg); }
+.l-fails { color: var(--bad); background: var(--bad-bg); }
+.l-fragile, .l-not-manufacturable, .l-out-of-envelope { color: var(--warn-ink); background: var(--warn-bg); }
+.plan { padding: 6px 14px 8px; font-size: 12px; color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical; overflow: hidden; border-top: 1px solid var(--line); }
+.graph { display: block; width: 100%; height: 100%; min-height: 0; }
+.gwrap { min-height: 0; padding: 4px 6px 0; }
+.g-node rect { fill: var(--raised); stroke: var(--line); stroke-width: 1.5; transition: stroke .3s, fill .3s; }
+.g-node text { fill: var(--text-2); font-size: 11px; text-anchor: middle; }
+.g-node .lbl { font-weight: 700; fill: var(--text); font-size: 12px; }
+.g-node.active rect { stroke: var(--c); stroke-width: 2.5; animation: glow 1s ease-in-out infinite; }
+.g-node.done rect { stroke: var(--c); stroke-width: 2; }
+.g-node.error rect { stroke: var(--bad); stroke-width: 2; }
+@keyframes glow { 50% { stroke-opacity: .35; } }
+.g-edge { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.g-edge.active { stroke: var(--c); stroke-width: 2; animation: flow .6s linear infinite; }
+.g-edge.done { stroke: var(--c); stroke-width: 2; stroke-dasharray: none; opacity: .75; }
+@keyframes flow { to { stroke-dashoffset: -8; } }
+.steps { display: flex; gap: 4px; margin-top: 5px; }
+.steps span { font-size: 11px; font-weight: 600; padding: 0 7px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.steps span.on { color: var(--surface); background: var(--c); border-color: var(--c); }
+.steps .arrow { border: 0; padding: 0; }
+.bottom { display: grid; grid-template-columns: 1.9fr 1fr; gap: 12px; }
+.chart { padding: 12px 14px 8px; position: relative; }
+.chart h2, .decision h2 { font-size: 15px; margin: 0 0 2px; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--text-2); margin: 6px 0 0; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.legend i.hollow { background: transparent !important; border: 2px solid var(--text-2); }
+svg text { fill: var(--muted); font-size: 12px; }
+.pt { transition: r .3s; }
+.pt-new { animation: pop .5s ease-out; transform-box: fill-box; transform-origin: center; }
+@keyframes pop { from { transform: scale(2.4); opacity: 0; } }
+.tip { position: absolute; pointer-events: none; background: var(--text); color: var(--surface); font-size: 12px; padding: 6px 9px;
+       border-radius: 6px; max-width: 280px; display: none; z-index: 2; }
+.decision { padding: 12px 14px; display: grid; gap: 8px; align-content: start; }
+.big { font-size: 20px; font-weight: 700; }
+.verdict { font-size: 13px; color: var(--text-2); }
+.tallies { display: flex; gap: 6px; flex-wrap: wrap; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+td { padding: 4px 6px; border-top: 1px solid var(--line); }
+td:first-child { font-weight: 700; white-space: nowrap; }
+.ok { color: var(--good-ink); font-weight: 700; } .no { color: var(--bad); font-weight: 700; }
+.foot { font-size: 12px; color: var(--muted); }
+/* space look: deep navy, a quiet starfield, glassy cards */
+:root[data-theme="dark"] { --bg: #060a14; --surface: rgba(15, 21, 36, .86); --raised: rgba(24, 32, 52, .9); --line: #222d44;
+  --text: #e7edf7; --text-2: #b4bfd3; --muted: #7d8aa3; --grid: #1c2639; }
+:root[data-theme="dark"] body {
+  background: radial-gradient(1100px 520px at 85% -12%, rgba(98, 80, 214, .20), transparent 60%),
+              radial-gradient(900px 480px at -10% 112%, rgba(57, 135, 229, .14), transparent 60%), var(--bg); }
+:root[data-theme="dark"] body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .55;
+  background-image: radial-gradient(1px 1px at 23px 41px, #fff, transparent), radial-gradient(1px 1px at 117px 163px, #cfe0ff, transparent),
+    radial-gradient(1.5px 1.5px at 201px 77px, #fff, transparent), radial-gradient(1px 1px at 61px 211px, #fff, transparent),
+    radial-gradient(1px 1px at 173px 19px, #ffe9c7, transparent), radial-gradient(1px 1px at 251px 233px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 89px 121px, #dfe8ff, transparent);
+  background-size: 280px 280px; }
+:root[data-theme="dark"] .card { backdrop-filter: blur(6px); }
+main { position: relative; z-index: 1; }
+.kicker { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.mono, .counter b, .stats { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.hero { display: grid; grid-template-columns: 1fr 400px; gap: 12px; }
+.hero-left { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.viewer { position: relative; overflow: hidden; min-height: 210px; }
+.viewer canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.viewer .cap { position: absolute; left: 12px; right: 12px; bottom: 9px; font-size: 12px; color: var(--text-2); display: flex;
+  justify-content: space-between; gap: 8px; align-items: center; }
+.viewer .ttl { position: absolute; left: 12px; top: 9px; right: 12px; display: flex; justify-content: space-between; }
+.viewer .ttl b { font-size: 13px; }
+@media (max-width: 1100px) { .hero { grid-template-columns: 1fr; } .viewer { min-height: 240px; } }
+
+/* click a card to open it large in the middle of the screen; it keeps updating live */
+.lane, .chart, .decision, .viewer { cursor: zoom-in; position: relative; }
+.lane::after, .chart::after, .decision::after, .viewer::after { content: "\2922"; position: absolute; right: 10px; bottom: 8px; font-size: 13px;
+  color: var(--muted); opacity: 0; transition: opacity .2s; pointer-events: none; }
+.lane:hover::after, .chart:hover::after, .decision:hover::after, .viewer:hover::after { opacity: 1; }
+.backdrop { position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 24px;
+  background: rgba(4, 7, 14, .62); backdrop-filter: blur(4px); }
+.backdrop.open { display: grid; }
+.backdrop .close { position: fixed; top: 16px; right: 20px; width: 36px; height: 36px; border-radius: 50%; font-size: 20px; line-height: 1;
+  display: grid; place-items: center; background: var(--surface); color: var(--text); border: 1px solid var(--line); }
+.card.expanded { width: min(1200px, 94vw); height: min(86vh, 860px); cursor: default; overflow: auto; animation: zoomin .22s ease-out;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .45); }
+.card.expanded::after { display: none; }
+.lane.expanded { grid-template-rows: auto auto 1fr; }
+.lane.graphcard.expanded { grid-template-rows: auto 1fr auto; }
+.lane.expanded .note, .lane.expanded .plan { -webkit-line-clamp: unset; display: block; }
+.lane.expanded .item { font-size: 14px; }
+.decision.expanded { font-size: 15px; } .decision.expanded .big { font-size: 26px; }
+.viewer.expanded { min-height: 0; } .viewer.expanded .ttl b { font-size: 16px; }
+.placeholder { visibility: hidden; }
+@keyframes zoomin { from { transform: scale(.92); opacity: 0; } }
+
+/* compliance and vendors */
+.bottom2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.compliance, .vendors { padding: 12px 14px; max-height: 360px; overflow: auto; cursor: zoom-in; position: relative; }
+.compliance h2, .vendors h2 { font-size: 15px; margin: 0 0 2px; }
+.compliance.expanded, .vendors.expanded { max-height: none; }
+.compliance:hover::after, .vendors:hover::after { content: "\2922"; position: absolute; right: 10px; top: 10px; color: var(--muted); font-size: 13px; }
+.crow { display: grid; grid-template-columns: 24px 1fr auto; gap: 10px; padding: 7px 0; border-top: 1px solid var(--line); align-items: start; }
+.crow b { font-size: 13px; } .crow .d { font-size: 12.5px; color: var(--text-2); } .crow .ref { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.cs { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-weight: 700; font-size: 12px; }
+.cs-pass { color: var(--good-ink); background: var(--good-bg); } .cs-fail { color: var(--bad); background: var(--bad-bg); }
+.cs-action, .cs-confirm { color: var(--warn-ink); background: var(--warn-bg); } .cs-info { color: var(--muted); background: var(--raised); }
+.vrow { padding: 8px 0; border-top: 1px solid var(--line); display: grid; gap: 2px; }
+.vrow a { color: var(--text); font-weight: 700; text-decoration: none; } .vrow a:hover { text-decoration: underline; }
+.vrow .d { font-size: 12.5px; color: var(--text-2); }
+.vfoot { font-size: 12px; color: var(--muted); margin-top: 8px; }
+.small { font-size: 12px; margin-bottom: 6px; }
+@media (max-width: 1100px) { .bottom2 { grid-template-columns: 1fr; } }
+
+/* pipeline, compliance engine, supplier desk, market scan */
+.pipeline { padding: 10px 14px 6px; cursor: zoom-in; position: relative; }
+.pipeline .phead { display: flex; gap: 12px; align-items: baseline; font-size: 14px; }
+.pipeline .phead .muted { font-size: 12px; }
+.pipeline svg { width: 100%; height: auto; display: block; max-height: 190px; }
+.pipeline.expanded svg { max-height: none; }
+.lane .plan { -webkit-line-clamp: unset; display: block; overflow-y: auto; border-top: 0; font-size: 12.5px; }
+.compliance, .suppliers, .market { padding: 12px 14px; max-height: 460px; overflow: auto; cursor: zoom-in; position: relative; }
+.compliance.expanded, .suppliers.expanded, .market.expanded { max-height: none; }
+.compliance h2, .suppliers h2, .market h2 { font-size: 15px; margin: 0 0 2px; }
+.score { display: flex; gap: 14px; align-items: center; margin: 8px 0; }
+.score b { font-size: 26px; font-family: ui-monospace, Menlo, monospace; }
+.cat { margin-top: 10px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.mbar { height: 6px; border-radius: 3px; background: var(--raised); margin-top: 4px; overflow: hidden; }
+.mbar i { display: block; height: 100%; border-radius: 3px; }
+.review { margin: 8px 0; padding: 10px 12px; border-radius: 10px; background: var(--raised); border: 1px solid var(--line); font-size: 13px; }
+.review ul { margin: 6px 0 0 18px; padding: 0; } .review li { margin: 2px 0; }
+.heat { border-collapse: collapse; margin-top: 6px; font-size: 11px; width: auto; }
+.heat td, .heat th { padding: 0; border: 0; }
+.heat th { font-weight: 600; color: var(--muted); padding: 0 2px; writing-mode: vertical-rl; transform: rotate(180deg); height: 38px; text-align: left; }
+.heat td.lbl { padding-right: 8px; white-space: nowrap; color: var(--text-2); }
+.heat td.c { width: 16px; height: 16px; } .heat td.c i { display: block; width: 13px; height: 13px; border-radius: 3px; margin: 1px; }
+.c-pass { background: var(--good); } .c-fail { background: var(--bad); } .c-action { background: var(--warn); } .c-info { background: var(--line); }
+.rfq { font-size: 12.5px; color: var(--text-2); margin: 6px 0; }
+.qt { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.qt td, .qt th { padding: 6px 6px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; white-space: normal; }
+.qt th { color: var(--muted); font-weight: 600; font-size: 11.5px; }
+.qt tr.win td { background: var(--good-bg); }
+.qt .chk { font-size: 11.5px; } .qt .ok { color: var(--good-ink); } .qt .no { color: var(--bad); }
+.memo { margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: var(--raised); border: 1px solid var(--line); font-size: 13px; }
+.market { margin-top: 0; }
+@media (max-width: 1100px) { .heat th { height: 30px; } }
+
+/* requirements desk and red team */
+.reqdesk { padding: 12px 14px; cursor: zoom-in; position: relative; }
+.reqdesk h2, .redteam h2 { font-size: 15px; margin: 0 0 2px; }
+.reqdesk textarea { width: 100%; min-height: 64px; font: inherit; font-size: 13px; color: var(--text); background: var(--raised);
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; resize: vertical; }
+.reqrow { display: flex; gap: 10px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.reqgrid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; margin-top: 8px; }
+.brieftext { font-size: 13px; color: var(--text-2); background: var(--raised); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+.rq { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.rq td, .rq th { padding: 5px 6px; border-top: 1px solid var(--line); text-align: left; vertical-align: top; white-space: normal; }
+.rq th { color: var(--muted); font-weight: 600; font-size: 11.5px; }
+.rq input { width: 90px; font: inherit; font-size: 12.5px; color: var(--text); background: var(--surface); border: 1px solid var(--warn);
+  border-radius: 6px; padding: 2px 6px; }
+.src-brief { color: var(--good-ink); } .src-assumption { color: var(--warn-ink); }
+.approvebar { margin-top: 10px; padding: 10px 12px; border-radius: 10px; border: 2px solid var(--warn); background: var(--warn-bg);
+  display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; animation: glowbox 1.2s ease-in-out infinite; }
+@keyframes glowbox { 50% { border-color: transparent; } }
+.approved { margin-top: 10px; color: var(--good-ink); font-weight: 600; font-size: 13px; }
+.redteam { padding: 12px 14px; max-height: 460px; overflow: auto; cursor: zoom-in; position: relative; }
+.redteam.expanded, .reqdesk.expanded { max-height: none; }
+.bp { display: flex; gap: 12px; margin: 8px 0; flex-wrap: wrap; }
+.bp div { background: var(--raised); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+.bp b { display: block; font-size: 20px; font-family: ui-monospace, Menlo, monospace; }
+.bp span { font-size: 12px; color: var(--muted); }
+
+/* change impact */
+.g-node.reused rect { stroke-dasharray: 6 4; }
+.g-node.reused .lbl { opacity: .7; }
+.chgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px 14px; margin: 8px 0; font-size: 12.5px; }
+.chgrid label { display: flex; flex-direction: column; gap: 3px; color: var(--muted); }
+.chgrid input { font: inherit; font-size: 13px; color: var(--text); background: var(--raised); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.chgrid input.edited { border-color: var(--warn); }
+.impgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.arrow-to { color: var(--muted); padding: 0 4px; }
+@media (max-width: 1100px) { .chgrid { grid-template-columns: 1fr 1fr; } .impgrid { grid-template-columns: 1fr; } }
+
+/* chief engineer review */
+.board { padding: 12px 14px; cursor: zoom-in; position: relative; margin-top: 14px; }
+.board h2 { font-size: 15px; margin: 0 0 2px; }
+.round { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.round .head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.round .head b { font-size: 15px; }
+.overruled { margin-top: 6px; color: var(--warn-ink); font-weight: 600; font-size: 13px; }
+
+/* fragility and trade-offs */
+.fragility, .tradeoffs { padding: 12px 14px; max-height: 460px; overflow: auto; cursor: zoom-in; position: relative; }
+.fragility.expanded, .tradeoffs.expanded { max-height: none; }
+.fragility h2, .tradeoffs h2 { font-size: 15px; margin: 0 0 2px; }
+.sens { display: grid; grid-template-columns: 110px 1fr 54px; gap: 6px; align-items: center; font-size: 12.5px; margin: 3px 0; }
+.sens .track { height: 8px; background: var(--raised); border-radius: 4px; position: relative; }
+.sens .track i { position: absolute; top: 0; height: 100%; border-radius: 4px; }
+.sliders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0; font-size: 12.5px; }
+.sliders input { width: 100%; }
+.qt tr.pick td { background: var(--good-bg); }
+@media (max-width: 1100px) {
+  .team { grid-template-columns: 1fr 1fr; } .bottom { grid-template-columns: 1fr; } .counters { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) { .team { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="hero"><div class="hero-left">
+  <div class="top">
+    <div>
+      <div class="kicker">Aerospace bracket &middot; parallel design</div>
+      <h1>Design team, live</h1>
+      <div class="muted">A lead agent plans, three specialist agents search in parallel, and plain physics code verifies every claim.</div>
+    </div>
+    <div class="controls">
+      <select id="case" aria-label="case"></select>
+      <select id="model" aria-label="model"></select>
+      <button class="primary" id="run">Run live</button>
+      <div class="sep"></div>
+      <select id="recording" aria-label="recording"></select>
+      <select id="speed" aria-label="replay speed"><option value="1">1x</option><option value="2" selected>2x</option><option value="4">4x</option></select>
+      <button id="replay">Replay</button>
+      <button id="package" disabled title="One document with the requirement, the evidence and every decision of this run">Design Package</button>
+      <button id="theme" title="Switch theme">&#9680;</button>
+    </div>
+  </div>
+
+  <div class="card counters">
+    <div class="counter"><span>elapsed</span><b id="c-time">0.0 s</b></div>
+    <div class="counter"><span>model calls</span><b id="c-calls">0</b></div>
+    <div class="counter"><span>physics checks</span><b id="c-checks">0</b></div>
+    <div class="counter"><span>proposals verified</span><b id="c-verified">-</b></div>
+    <div class="counter"><span>tokens</span><b id="c-tokens">0</b></div>
+    <div class="counter"><span>cost</span><b id="c-cost">$0.000</b></div>
+  </div>
+
+  <div class="card brief" id="brief"><span class="muted">Pick a case and press Run live, or replay a saved run.</span></div>
+  </div>
+  <div class="card viewer" id="viewer">
+    <canvas id="part"></canvas>
+    <div class="ttl"><b>The part</b><span class="muted" id="v-who">cantilever bracket</span></div>
+    <div class="cap"><span class="mono" id="v-dims">fixed at the wall, load at the tip</span><span id="v-pill"></span></div>
+  </div>
+  </div>
+
+  <div class="card reqdesk" id="reqdesk"></div>
+
+  <div class="card board" id="impact"></div>
+
+  <div class="card pipeline" id="pipeline">
+    <div class="phead"><b>Pipeline</b><span class="muted">LangGraph · every box is a node, lit while it runs</span></div>
+    <svg class="graph" id="graph" viewBox="0 0 1750 196" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <div class="team" id="team"></div>
+
+  <div class="bottom">
+    <div class="card chart">
+      <h2>Design space</h2>
+      <div class="muted" style="font-size:12px">Every physics check appears as it happens. Filled = passes all seven requirements, hollow = fails one.
+        Ringed = a final proposal. The star is the true optimum, found by brute force over every design.</div>
+      <svg id="plot" viewBox="0 0 860 280" role="img" aria-label="Designs checked: mass versus worst-case yield margin"></svg>
+      <div class="legend" id="legend"></div>
+      <div class="tip" id="tip"></div>
+    </div>
+    <div class="card decision" id="decision">
+      <h2>Decision</h2>
+      <div class="muted">Waiting for the team.</div>
+    </div>
+  </div>
+  <div class="bottom2">
+    <div class="card redteam" id="redteam"></div>
+    <div class="card fragility" id="fragility"></div>
+  </div>
+  <div class="card board" id="board"></div>
+  <div class="bottom2">
+    <div class="card compliance" id="compliance"></div>
+    <div class="card tradeoffs" id="tradeoffs"></div>
+  </div>
+  <div class="bottom2">
+    <div class="card suppliers" id="suppliers"></div>
+    <div class="card market" id="market"></div>
+  </div>
+  <div class="foot">Toy model: textbook cantilever formulas and typical handbook values. It shows the pattern, not real engineering.</div>
+</main>
+<div class="backdrop" id="backdrop"><button class="close" id="close" aria-label="Close">&times;</button></div>
+
+<script>
+const AGENTS = ["Al 6061-T6", "Ti-6Al-4V", "Steel 4130"];
+const COLOR = {"Al 6061-T6": "var(--al)", "Ti-6Al-4V": "var(--ti)", "Steel 4130": "var(--steel)", lead: "var(--lead)"};
+const SHORT = {"Al 6061-T6": "Al", "Ti-6Al-4V": "Ti", "Steel 4130": "Steel"};
+const $ = id => document.getElementById(id);
+let source = null, S = null;
+
+function fresh() {
+  return {usage: {}, checks: [], proposals: [], optimum: null, selected: null, t: 0, tLocal: 0, speed: 1, running: false,
+          vendorSub: {}, quotes: {}, reviews: [], reusedNodes: new Set(), steps: [], qty: 10};
+}
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function fmt(x, d = 2, sign = false) { return x == null ? "-" : (sign && x >= 0 ? "+" : "") + x.toFixed(d); }
+function pill(label) { return el("span", "pill l-" + label.replace(/ /g, "-"), label); }
+
+function buildTeam() {
+  const team = $("team"); team.innerHTML = "";
+  const lead = el("div", "card lane"); lead.id = "lane-lead";
+  lead.innerHTML = `<header><div class="name"><span class="dot" style="background:${COLOR.lead}"></span>Lead agent
+    <span class="status" id="st-lead">waiting</span></div><div class="stats" id="ss-lead">reads the requirement, briefs each specialist</div></header>
+    <div class="note" id="nt-lead"></div><div class="plan" id="plan"></div>`;
+  team.append(lead);
+  for (const a of AGENTS) {
+    const lane = el("div", "card lane");
+    lane.innerHTML = `<header><div class="name"><span class="dot" style="background:${COLOR[a]}"></span>${a} specialist
+      <span class="status" id="st-${SHORT[a]}">waiting</span></div><div class="stats" id="ss-${SHORT[a]}">0 checks</div>
+      <div class="steps" id="sp-${SHORT[a]}" style="--c:${COLOR[a]}"><span data-s="model">model</span><span class="arrow">&#8644;</span><span data-s="tools">tools</span><span class="arrow">&#8594;</span><span data-s="finalize">finalize</span></div></header>
+      <div class="note" id="nt-${SHORT[a]}"></div><div class="log" id="log-${SHORT[a]}"></div>`;
+    team.append(lane);
+  }
+  drawGraph();
+  $("legend").innerHTML = AGENTS.map(a => `<span><i style="background:${COLOR[a]}"></i>${a}</span>`).join("") +
+    `<span><i class="hollow"></i>fails a requirement</span><span>&#9733; true optimum</span>`;
+}
+
+function status(agent, text, cls) {
+  const id = agent === "lead" ? "lead" : SHORT[agent];
+  const s = $("st-" + id); if (!s) return;
+  s.textContent = text; s.className = "status " + (cls || "");
+}
+
+function addItem(agent, node) {
+  const log = $("log-" + SHORT[agent]); if (!log) return;
+  log.prepend(node);
+}
+
+function counters() {
+  const u = Object.values(S.usage);
+  const sum = k => u.reduce((a, x) => a + (x[k] || 0), 0);
+  $("c-calls").textContent = sum("llm_calls");
+  $("c-checks").textContent = S.checks.length;
+  $("c-tokens").textContent = (sum("input_tokens") + sum("output_tokens")).toLocaleString();
+  $("c-cost").textContent = "$" + sum("cost_usd").toFixed(3);
+  if (S.proposals.length) {
+    const ok = S.proposals.filter(p => p.label === "verified").length;
+    $("c-verified").textContent = `${ok} / ${S.proposals.length}`;
+  }
+  for (const a of AGENTS) {
+    const x = S.usage[a] || {}, n = S.checks.filter(c => c.agent === a).length;
+    const ss = $("ss-" + SHORT[a]);
+    if (ss) ss.textContent = `${n} checks · ${x.llm_calls || 0} model calls · $${(x.cost_usd || 0).toFixed(3)}`;
+  }
+}
+
+function tick() {
+  if (S && S.running) {
+    const t = S.t + (performance.now() - S.tLocal) / 1000 * S.speed;
+    $("c-time").textContent = t.toFixed(1) + " s";
+  }
+  requestAnimationFrame(tick);
+}
+
+
+// ---- agent graph: the same nodes and edges as team.py, lit up by events ----
+const GN = {
+  start: {x: 36, y: 86, w: 56, h: 26, label: "START", c: "var(--text-2)"},
+  requirements: {x: 148, y: 86, w: 124, h: 48, label: "Requirements", c: "var(--warn)"},
+  lead: {x: 282, y: 86, w: 100, h: 48, label: "Lead", c: COLOR.lead},
+  Al: {x: 422, y: 30, w: 120, h: 40, label: "Al specialist", c: COLOR["Al 6061-T6"]},
+  Ti: {x: 422, y: 86, w: 120, h: 40, label: "Ti specialist", c: COLOR["Ti-6Al-4V"]},
+  Steel: {x: 422, y: 142, w: 120, h: 40, label: "Steel specialist", c: COLOR["Steel 4130"]},
+  verify: {x: 566, y: 86, w: 108, h: 48, label: "Verifier", c: "var(--good)"},
+  redteam: {x: 696, y: 86, w: 112, h: 48, label: "Red Team", c: "var(--bad)"},
+  fragility: {x: 826, y: 86, w: 116, h: 48, label: "Monte Carlo", c: "var(--good)"},
+  chief: {x: 958, y: 86, w: 120, h: 48, label: "Chief Engineer", c: "var(--warn)"},
+  compliance: {x: 1108, y: 86, w: 150, h: 48, label: "Compliance Engine", c: "var(--good)"},
+  vA: {x: 1272, y: 22, w: 106, h: 34, label: "Vendor A", c: "var(--warn)"},
+  vB: {x: 1272, y: 64, w: 106, h: 34, label: "Vendor B", c: "var(--warn)"},
+  vC: {x: 1272, y: 106, w: 106, h: 34, label: "Vendor C", c: "var(--warn)"},
+  vD: {x: 1272, y: 148, w: 106, h: 34, label: "Vendor D", c: "var(--warn)"},
+  procurement: {x: 1426, y: 86, w: 122, h: 48, label: "Procurement", c: "var(--warn)"},
+  market: {x: 1576, y: 86, w: 122, h: 48, label: "Market scan", c: "var(--lead)"},
+  end: {x: 1706, y: 86, w: 56, h: 26, label: "END", c: "var(--text-2)"},
+};
+const VK = ["vA", "vB", "vC", "vD"];
+const GE = [["start", "requirements"], ["requirements", "lead"], ["lead", "Al"], ["lead", "Ti"], ["lead", "Steel"], ["Al", "verify"], ["Ti", "verify"], ["Steel", "verify"],
+  ["verify", "redteam"], ["redteam", "fragility"], ["fragility", "chief"], ["chief", "compliance"], ["chief", "lead"], ...VK.map(k => ["compliance", k]), ...VK.map(k => [k, "procurement"]), ["procurement", "market"], ["market", "end"]];
+const SUB0 = {chief: "ship or redesign", fragility: "2000 samples, code", requirements: "brief -> approval", redteam: "tries to break it", verify: "no model", compliance: "rules in code + review", procurement: "code ranks, agent writes", market: "web search",
+  vA: "sample vendor", vB: "sample vendor", vC: "sample vendor", vD: "sample vendor"};
+function drawGraph() {
+  const svg = $("graph"), ns = "http://www.w3.org/2000/svg";
+  if (!svg) return;
+  svg.innerHTML = "";
+  for (const [a, b] of GE) {
+    const A = GN[a], B = GN[b], x1 = A.x + A.w / 2, x2 = B.x - B.w / 2, mx = (x1 + x2) / 2;
+    const path = document.createElementNS(ns, "path");
+    path.setAttribute("d", `M${x1} ${A.y} C${mx} ${A.y} ${mx} ${B.y} ${x2} ${B.y}`);
+    path.setAttribute("class", "g-edge"); path.id = `e-${a}-${b}`; path.style.setProperty("--c", ["end", "verify", "procurement"].includes(b) ? A.c : B.c);
+    if (B.x < A.x) {   // the redesign loop: back from the Chief Engineer to the Lead, under the other nodes
+      const y0 = A.y + A.h / 2, y1 = 180;
+      path.setAttribute("d", `M${A.x} ${y0} V${y1 - 8} Q${A.x} ${y1} ${A.x - 8} ${y1} H${B.x + 8} Q${B.x} ${y1} ${B.x} ${y1 - 8} V${B.y + B.h / 2}`);
+      path.style.setProperty("--c", A.c);
+      const t = document.createElementNS(ns, "text");
+      Object.entries({x: (A.x + B.x) / 2, y: y1 + 13, "text-anchor": "middle", "font-size": 11, fill: "var(--muted)"}).forEach(([k, v]) => t.setAttribute(k, v));
+      t.textContent = "redesign: back to the Lead with a directive"; svg.append(t);
+    }
+    svg.append(path);
+  }
+  for (const [id, n] of Object.entries(GN)) {
+    const g = document.createElementNS(ns, "g");
+    g.setAttribute("class", "g-node"); g.id = "n-" + id; g.style.setProperty("--c", n.c);
+    const r = document.createElementNS(ns, "rect");
+    Object.entries({x: n.x - n.w / 2, y: n.y - n.h / 2, width: n.w, height: n.h, rx: n.h > 24 ? 8 : 11}).forEach(([k, v]) => r.setAttribute(k, v));
+    const t = document.createElementNS(ns, "text");
+    t.setAttribute("x", n.x); t.setAttribute("y", n.h > 30 ? n.y - (n.h > 40 ? 3 : 2) : n.y + 4); t.setAttribute("class", "lbl"); t.textContent = n.label;
+    g.append(r, t);
+    if (n.h > 30) { const sub = document.createElementNS(ns, "text"); sub.setAttribute("x", n.x); sub.setAttribute("y", n.y + (n.h > 40 ? 13 : 11)); sub.id = "sub-" + id; sub.textContent = SUB0[id] || "waiting"; g.append(sub); }
+    const tip = document.createElementNS(ns, "title"); tip.id = "tt-" + id; tip.textContent = n.label; g.append(tip);
+    svg.append(g);
+  }
+}
+function node(id, state, sub) {
+  const g = $("n-" + id); if (!g) return;
+  g.setAttribute("class", "g-node " + (state || "") + (S && S.reusedNodes.has(id) ? " reused" : ""));
+  if (sub != null && $("sub-" + id)) $("sub-" + id).textContent = sub;
+}
+function edge(a, b, state) { const e = $(`e-${a}-${b}`); if (e) e.setAttribute("class", "g-edge " + (state || "")); }
+function step(agent, s) {
+  const box = $("sp-" + SHORT[agent]); if (!box) return;
+  box.querySelectorAll("[data-s]").forEach(x => x.classList.toggle("on", x.dataset.s === s));
+}
+
+// ---- 3D view of the part being checked: a cantilever fixed to a wall, load at the tip ----
+const V = {b: 20, t: 20, D: 0, tb: 20, tt: 20, tD: 0, L: 150, load: 2000, yaw: 0.7, mat: null, label: null};
+const MATVAR = {"Al 6061-T6": "--al", "Ti-6Al-4V": "--ti", "Steel 4130": "--steel"};
+const BEND = 12;  // deflection is drawn 12x larger so it can be seen
+function hexRgb(v) { const c = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  return c.startsWith("#") ? [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)) : [140, 150, 170]; }
+function setPart(design, label, deflection, who) {
+  V.tb = design.width_mm; V.tt = design.thickness_mm; V.mat = design.material; V.label = label;
+  V.tD = Math.min(0.25, (deflection || 0) / V.L * BEND);
+  $("v-who").textContent = who;
+  $("v-dims").textContent = `${SHORT[design.material]} · ${design.width_mm} x ${design.thickness_mm} x ${V.L} mm · bend shown ${BEND}x`;
+  $("v-pill").innerHTML = ""; if (label) $("v-pill").append(pill(label));
+}
+function drawPart() {
+  const cv = $("part"), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  V.b += (V.tb - V.b) * .12; V.t += (V.tt - V.t) * .12; V.D += (V.tD - V.D) * .12; V.yaw += .006;
+  const b = V.b / V.L, t = V.t / V.L, D = V.D, N = 16, cy = Math.cos(V.yaw), sy = Math.sin(V.yaw), px = -.42, cp = Math.cos(px), sp = Math.sin(px);
+  const cam = p => { const x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy, y2 = p[1] * cp - z1 * sp, z2 = p[1] * sp + z1 * cp; return [x1, y2, z2 + 2.5]; };
+  const f = Math.min(w, h * 1.6) * 1.05, ox = w / 2, oy = h * .5;
+  const scr = q => [ox + q[0] * f / q[2], oy - q[1] * f / q[2]];
+  const sub = (a, c) => [a[0] - c[0], a[1] - c[1], a[2] - c[2]], dot = (a, c) => a[0] * c[0] + a[1] * c[1] + a[2] * c[2];
+  const cross = (a, c) => [a[1] * c[2] - a[2] * c[1], a[2] * c[0] - a[0] * c[2], a[0] * c[1] - a[1] * c[0]];
+  const faces = [];
+  const face = (pts, inside, rgb) => faces.push({pts: pts.map(cam), inside: cam(inside), rgb});
+  // beam: rings of 4 corners along the length, bent like a tip-loaded cantilever
+  const rings = [], axis = [];
+  for (let i = 0; i <= N; i++) {
+    const s = i / N, x = -.45 + s * .9, dy = -D * (3 * s * s - s * s * s) / 2;
+    rings.push([[x, dy + t / 2, b / 2], [x, dy + t / 2, -b / 2], [x, dy - t / 2, -b / 2], [x, dy - t / 2, b / 2]]); axis.push([x, dy, 0]);
+  }
+  const rgb = V.mat ? hexRgb(MATVAR[V.mat]) : [120, 130, 150];
+  for (let i = 0; i < N; i++) {
+    const a = rings[i], c = rings[i + 1], mid = [(axis[i][0] + axis[i + 1][0]) / 2, (axis[i][1] + axis[i + 1][1]) / 2, 0];
+    face([a[0], a[1], c[1], c[0]], mid, rgb); face([a[3], c[3], c[2], a[2]], mid, rgb);
+    face([a[0], c[0], c[3], a[3]], mid, rgb); face([a[1], a[2], c[2], c[1]], mid, rgb);
+  }
+  face(rings[N], axis[N - 1], rgb);
+  // wall
+  const wx = -.45, ws = .32, wd = .05, wall = [140, 146, 160];
+  const W8 = [[wx - wd, ws, ws], [wx, ws, ws], [wx, ws, -ws], [wx - wd, ws, -ws], [wx - wd, -ws, ws], [wx, -ws, ws], [wx, -ws, -ws], [wx - wd, -ws, -ws]];
+  const wc = [wx - wd / 2, 0, 0];
+  [[0, 1, 2, 3], [4, 7, 6, 5], [0, 4, 5, 1], [3, 2, 6, 7], [1, 5, 6, 2], [0, 3, 7, 4]].forEach(ix => face(ix.map(k => W8[k]), wc, wall));
+  // shade and draw back to front
+  const light = [-.35, .65, -.68];
+  const drawn = faces.map(F => {
+    let n = cross(sub(F.pts[1], F.pts[0]), sub(F.pts[2], F.pts[0]));
+    const len = Math.hypot(...n) || 1; n = n.map(v => v / len);
+    const ctr = F.pts.reduce((a, q) => [a[0] + q[0] / F.pts.length, a[1] + q[1] / F.pts.length, a[2] + q[2] / F.pts.length], [0, 0, 0]);
+    if (dot(n, sub(ctr, F.inside)) < 0) n = n.map(v => -v);
+    return {F, n, ctr, z: ctr[2]};
+  }).filter(o => dot(o.n, o.ctr) < 0).sort((p, q) => q.z - p.z);
+  const failing = V.label && V.label !== "verified";
+  for (const {F, n} of drawn) {
+    const k = .38 + .62 * Math.max(0, dot(n, light));
+    g.beginPath(); F.pts.map(scr).forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath();
+    g.fillStyle = `rgb(${F.rgb.map(c => Math.round(c * k)).join(",")})`; g.fill();
+    // beam segments get a stroke in their own fill colour so the surface reads as one piece
+    g.strokeStyle = failing && F.rgb === rgb ? "rgba(208,59,59,.9)" : F.rgb === rgb ? g.fillStyle : "rgba(0,0,0,.25)";
+    g.lineWidth = failing && F.rgb === rgb ? 1.2 : .8; g.stroke();
+  }
+  // load arrow at the tip
+  const tip = rings[N], top = [tip[0][0], (tip[0][1] + tip[1][1]) / 2 + .01, 0];
+  const a0 = scr(cam([top[0], top[1] + .3, 0])), a1 = scr(cam(top));
+  g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--warn").trim() || "#fab219";
+  g.fillStyle = g.strokeStyle; g.lineWidth = 2.5;
+  g.beginPath(); g.moveTo(a0[0], a0[1]); g.lineTo(a1[0], a1[1]); g.stroke();
+  const ang = Math.atan2(a1[1] - a0[1], a1[0] - a0[0]);
+  g.beginPath(); g.moveTo(a1[0], a1[1]);
+  g.lineTo(a1[0] - 10 * Math.cos(ang - .45), a1[1] - 10 * Math.sin(ang - .45)); g.lineTo(a1[0] - 10 * Math.cos(ang + .45), a1[1] - 10 * Math.sin(ang + .45));
+  g.closePath(); g.fill();
+  g.font = "600 12px ui-monospace, Menlo, monospace"; g.fillText(`${V.load} N`, a0[0] + 6, a0[1] + 4);
+  requestAnimationFrame(drawPart);
+}
+
+// ---- design space plot ----
+const W = 860, M = {l: 56, r: 18, t: 14, b: 42};
+let H = 280;
+function plot() {
+  H = $("plot").closest(".expanded") ? 470 : 280;
+  $("plot").setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const svg = $("plot"), ns = "http://www.w3.org/2000/svg";
+  svg.innerHTML = "";
+  const pts = S.checks;
+  const opt = S.optimum;
+  const masses = pts.map(p => p.mass_g).concat(opt ? [opt.mass_g] : []);
+  const ref = opt ? opt.mass_g : (masses.length ? Math.min(...masses) : 200);
+  const xMax = Math.max(ref * 1.6, Math.min(Math.max(...masses, ref * 1.2) * 1.08, ref * 5));
+  const ms = pts.map(p => p.margin_worst);
+  const yMin = Math.max(-1, Math.min(-0.3, ...ms) - 0.1), yMax = Math.min(2, Math.max(0.6, ...ms) + 0.15);
+  const x = v => M.l + (Math.min(v, xMax) / xMax) * (W - M.l - M.r);
+  const y = v => M.t + (yMax - Math.max(yMin, Math.min(yMax, v))) / (yMax - yMin) * (H - M.t - M.b);
+  const add = (tag, a, text) => { const e = document.createElementNS(ns, tag); for (const k in a) e.setAttribute(k, a[k]);
+    if (text != null) e.textContent = text; svg.append(e); return e; };
+
+  add("rect", {x: M.l, y: y(0), width: W - M.l - M.r, height: y(yMin) - y(0), fill: "var(--shade)"});
+  const step = niceStep(xMax / 6);
+  for (let v = 0; v <= xMax; v += step) {
+    add("line", {x1: x(v), x2: x(v), y1: M.t, y2: H - M.b, stroke: "var(--grid)"});
+    add("text", {x: x(v), y: H - M.b + 18, "text-anchor": "middle"}, Math.round(v));
+  }
+  for (let v = Math.ceil(yMin * 2) / 2; v <= yMax; v += 0.5) {
+    add("line", {x1: M.l, x2: W - M.r, y1: y(v), y2: y(v), stroke: "var(--grid)"});
+    add("text", {x: M.l - 8, y: y(v) + 4, "text-anchor": "end"}, (v > 0 ? "+" : "") + v.toFixed(1));
+  }
+  add("line", {x1: M.l, x2: W - M.r, y1: y(0), y2: y(0), stroke: "var(--bad)", "stroke-width": 1.5, "stroke-dasharray": "5 4"});
+  add("text", {x: M.l + 6, y: y(0) + 16, fill: "var(--bad)"}, "below this line the part fails in the worst case");
+  add("text", {x: W - M.r, y: H - 6, "text-anchor": "end"}, "mass, g  (lighter is better)");
+  add("text", {x: 14, y: M.t + 4, transform: `rotate(-90 14 ${M.t + 4})`, "text-anchor": "end"}, "worst-case yield margin");
+
+  for (const p of S.proposals) {
+    if (p.mass_g == null) continue;
+    add("circle", {cx: x(p.mass_g), cy: y(p.margin_worst), r: 10, fill: "none", stroke: COLOR[p.agent], "stroke-width": 1.5, opacity: .7});
+  }
+  pts.forEach((p, i) => {
+    const c = add("circle", {class: "pt" + (i === pts.length - 1 && p.fresh ? " pt-new" : ""), cx: x(p.mass_g), cy: y(p.margin_worst), r: 5.5,
+      fill: p.label === "verified" ? COLOR[p.agent] : "var(--surface)", stroke: COLOR[p.agent], "stroke-width": 2});
+    c.addEventListener("mousemove", ev => showTip(ev, p));
+    c.addEventListener("mouseleave", () => $("tip").style.display = "none");
+    p.fresh = false;
+  });
+  const same = S.selected && opt && Math.abs(S.selected.mass_g - opt.mass_g) < 0.5;
+  const near = S.selected && opt && Math.abs(S.selected.mass_g / opt.mass_g - 1) < 0.03;
+  if (opt) {
+    const cx = x(opt.mass_g), cy = y(S.optMargin ?? 0);
+    add("path", {d: star(cx, cy, 11, 5), fill: "var(--warn)", stroke: "var(--text)", "stroke-width": 1});
+    if (!near) add("text", {x: cx + 14, y: cy - 12, fill: "var(--text-2)"}, `true optimum ${Math.round(opt.mass_g)} g`);
+  }
+  if (S.selected) {
+    const s = S.selected, cx = x(s.mass_g), cy = y(s.margin_worst);
+    add("circle", {cx, cy, r: 16, fill: "none", stroke: "var(--text)", "stroke-width": 2.5});
+    add("text", {x: cx + 22, y: cy - 14, fill: "var(--text)", "font-weight": 700},
+        same ? `selected = true optimum, ${Math.round(s.mass_g)} g`
+             : near ? `selected ${Math.round(s.mass_g)} g, true optimum ${Math.round(opt.mass_g)} g` : `selected ${Math.round(s.mass_g)} g`);
+  }
+}
+function niceStep(raw) { const p = Math.pow(10, Math.floor(Math.log10(raw))); for (const m of [1, 2, 2.5, 5, 10]) if (raw <= m * p) return m * p; return 10 * p; }
+function star(cx, cy, R, r) { let d = ""; for (let i = 0; i < 10; i++) { const a = Math.PI / 5 * i - Math.PI / 2, rr = i % 2 ? r : R;
+  d += (i ? "L" : "M") + (cx + rr * Math.cos(a)).toFixed(1) + " " + (cy + rr * Math.sin(a)).toFixed(1); } return d + "Z"; }
+function showTip(ev, p) {
+  const tip = $("tip"), box = $("plot").parentElement.getBoundingClientRect(), d = p.design;
+  tip.innerHTML = `<b>${d.material}, ${d.width_mm} x ${d.thickness_mm} mm</b><br>${p.mass_g.toFixed(0)} g · worst-case MS ${fmt(p.margin_worst, 2, true)}
+    · deflection ${fmt(p.deflection_mm)} mm<br>${p.label}${p.failed.length ? ": " + p.failed.join(", ") : ""}`;
+  tip.style.display = "block"; tip.style.left = (ev.clientX - box.left + 12) + "px"; tip.style.top = (ev.clientY - box.top + 12) + "px";
+}
+
+// ---- decision ----
+function decision(e) {
+  const box = $("decision"); box.innerHTML = "<h2>Decision</h2>";
+  if (!e.selected) {
+    box.append(el("div", "big", "No design meets these requirements"));
+    box.append(el("div", "verdict", e.optimum ? `${e.reason}. A design does exist (${Math.round(e.optimum.mass_g)} g, found by brute force), so the team missed it.`
+      : `${e.reason}. Brute force over every material, width and stock plate found none either, so the requirements are infeasible as written. Relax one, for example the arm length, the deflection limit or the plate thickness, and run again.`));
+    ["redteam", "fragility", "chief", "compliance", ...VK, "procurement", "market"].forEach(k => node(k, "", "skipped: no design"));
+    ["redteam", "compliance"].forEach(k => edge(k === "redteam" ? "verify" : "redteam", k, ""));
+    return;
+  }
+  const d = e.selected.design;
+  box.append(el("div", "big", `${d.material}, ${d.width_mm} x ${d.thickness_mm} mm, ${Math.round(e.selected.mass_g)} g`));
+  const regret = e.regret == null ? "" : e.regret < 0.0005 ? "Matches the true optimum." : `${(e.regret * 100).toFixed(1)}% heavier than the true optimum.`;
+  box.append(el("div", "verdict", `${regret} Picked as the ${e.reason}.`));
+  const tallies = el("div", "tallies"), counts = {};
+  S.proposals.forEach(p => counts[p.label] = (counts[p.label] || 0) + 1);
+  for (const [k, v] of Object.entries(counts)) { const p = pill(`${v} ${k}`); p.className = "pill l-" + k.replace(/ /g, "-"); tallies.append(p); }
+  const fp = S.proposals.filter(p => p.false_pass).length;
+  if (fp) { const p = el("span", "pill l-fails", `${fp} false passes caught`); tallies.append(p); }
+  box.append(tallies);
+  const t = el("table");
+  for (const r of e.selected.matrix) {
+    const tr = el("tr");
+    tr.append(el("td", "", r.id), el("td", "", r.title), el("td", "", r.value), el("td", r.passed ? "ok" : "no", r.passed ? "pass" : "fail"));
+    t.append(tr);
+  }
+  box.append(t);
+}
+
+// ---- events ----
+// the requirement is known: set the brief chips, the part in 3D and the optimum for the plot
+function setup(e) {
+  const r = e.requirement;
+  S.liveReq = r;
+  S.optimum = e.optimum || S.optimum; S.optMargin = null;
+  V.L = r.length_mm; V.load = Math.round(r.load_n); V.mat = null; V.label = null;
+  $("v-who").textContent = "waiting for the first check"; $("v-pill").innerHTML = "";
+  $("v-dims").textContent = `cantilever, ${V.L} mm long, ${V.load} N at the tip`;
+  const chips = [`part: ${r.part.length > 40 ? "cantilever bracket" : r.part}`, `case ${r.case}`, `${Math.round(r.load_n)} N at ${r.length_mm} mm`,
+    `deflection <= ${r.max_deflection_mm} mm`, `width ${r.width_range_mm.join("-")} mm`, `thickness ${r.thickness_range_mm.join("-")} mm`,
+    `yield x${r.yield_factor}`, `ultimate x${r.ultimate_factor}`, `worst case +${r.load_uncertainty * 100}% load, -${r.thickness_tolerance_mm} mm`, S.model || ""];
+  $("brief").innerHTML = ""; chips.filter(Boolean).forEach(c => $("brief").append(el("span", "chip", c)));
+  plot();
+}
+
+function handle(e) {
+  if (e.agent === "vendors") e.agent = "market";   // recordings made before the Supplier Desk existed
+  if (e.type === "vendors") e.type = "market";
+  if (e.t != null) { S.t = e.t; S.tLocal = performance.now(); }
+  switch (e.type) {
+    case "requirements": renderRequirements(e); break;
+    case "waiting": S.runId = e.run_id; armApproval(); break;
+    case "approval_needed": node("requirements", "active", "waiting for you"); renderApproval(e); break;
+    case "approved": node("requirements", "done", Object.keys(e.edits || {}).length ? "approved, edited" : "approved");
+      edge("requirements", "lead", "active"); renderApproved(e); break;
+    case "design_start": setup(e); break;
+    case "redesign_start": redesign(e); break;
+    case "review": renderBoard(e); break;
+    case "impact": renderImpact(e); break;
+    case "step": stepRow(e); break;
+    case "redteam_step": if (e.tests.length) redLine(`testing ${e.tests.map(cond).join(" | ")}`); break;
+    case "redteam": renderRedTeam(e); break;
+    case "fragility": renderFragility(e); break;
+    case "tradeoffs": S.trade = e; renderTradeoffs(); break;
+    case "run_start":
+      S.running = true; S.model = e.model; node("start", "done"); edge("start", "requirements", "active");
+      if (e.requirement) setup(e);
+      break;
+    case "agent_start":
+      if (e.agent === "requirements") { edge("start", "requirements", "done"); node("requirements", "active", "reading the brief"); break; }
+      if (e.agent === "redteam") { edge("verify", "redteam", "done"); node("redteam", "active", "attacking");
+        $("redteam").innerHTML = "<h2>Red Team Review</h2><div class='status working'>the red team is trying to break the design</div><div id='redlog' class='muted small'></div>"; break; }
+      if (e.agent === "fragility") { edge("redteam", "fragility", "done"); node("fragility", "active", "sampling"); break; }
+      if (e.agent === "chief") { edge("fragility", "chief", "done"); node("chief", "active", "reviewing");
+        if (!S.reviews.length) $("board").innerHTML = "<h2>Chief Engineer Review</h2>";
+        $("board").append(el("div", "status working", "the chief engineer is reading the findings")); break; }
+      if (e.agent === "compliance") { edge("chief", "compliance", "done"); node("compliance", "active", "checking rules");
+        if (!S.reviews.length) { edge("fragility", "chief", "done"); node("chief", "", "not in this recording"); }
+        $("compliance").innerHTML = "<h2>Compliance Engine</h2><div class='status working'>checking every rule</div>"; break; }
+      if (e.agent.startsWith("vendor-")) { const k = "v" + e.agent.slice(7); edge("compliance", k, "done"); node(k, "active", "quoting");
+        quoteRow(e.agent.slice(7), {status: "agent is quoting"}); break; }
+      if (e.agent === "procurement") { node("procurement", "active", "ranking"); break; }
+      if (e.agent === "market") { S.marketSeen = true; edge("procurement", "market", "done"); node("market", "active", "searching");
+        $("market").innerHTML = "<h2>Market scan</h2><div class='status working'>web search agent is looking for shops</div>"; break; }
+      status(e.agent, e.agent === "lead" ? "planning" : "searching", "working");
+      if (e.agent === "lead") { edge("requirements", "lead", "done"); node("lead", "active", "planning"); }
+      else { const k = SHORT[e.agent]; edge("lead", k, "done"); node(k, "active", "model"); step(e.agent, "model"); }
+      break;
+    case "plan":
+      $("plan").textContent = `Lead's plan${e.round > 1 ? ` (round ${e.round})` : ""}: ` + e.reasoning; $("tt-lead").textContent = e.reasoning;
+      for (const a of AGENTS) $("nt-" + SHORT[a]).textContent = "Lead: " + (e.notes[a] || "");
+      break;
+    case "turn":
+      if (e.tool_calls) addItem(e.agent, el("div", "item turn", `asked for ${e.tool_calls} physics check${e.tool_calls > 1 ? "s" : ""}`));
+      else if (e.text) addItem(e.agent, el("div", "item turn", "done searching: " + e.text.slice(0, 160)));
+      if (SHORT[e.agent]) {
+        const k = SHORT[e.agent], n = S.checks.filter(c => c.agent === e.agent).length;
+        if (e.tool_calls) { step(e.agent, "tools"); node(k, "active", `tools · ${n} checks`); }
+        else { step(e.agent, "finalize"); node(k, "active", "finalize"); }
+      }
+      break;
+    case "check": {
+      S.checks.push({...e, fresh: true});
+      if (S.optimum && e.design.material === S.optimum.material && Math.abs(e.design.width_mm - S.optimum.width_mm) < 1e-6
+          && e.design.thickness_mm === S.optimum.thickness_mm) S.optMargin = e.margin_worst;
+      const d = e.design, it = el("div", "item"), row = el("div", "row");
+      row.append(el("span", "", `${d.width_mm} x ${d.thickness_mm} mm · ${Math.round(e.mass_g)} g · MS ${fmt(e.margin_worst, 2, true)}`), pill(e.label));
+      it.append(row);
+      if (e.failed.length) it.append(el("div", "why", "fails " + e.failed.join(", ")));
+      addItem(e.agent, it); plot();
+      setPart(e.design, e.label, e.deflection_mm, `checking now: ${SHORT[e.agent]} specialist`);
+      node(SHORT[e.agent], "active", `tools · ${S.checks.filter(c => c.agent === e.agent).length} checks`);
+      setTimeout(() => { if (S.running && !$("n-" + SHORT[e.agent]).classList.contains("done")) step(e.agent, "model"); }, 400);
+      break;
+    }
+    case "usage": S.usage[e.agent] = e; break;
+    case "agent_done": {
+      if (e.agent === "requirements" || e.agent === "chief") break;
+      if (e.agent === "redteam") { node("redteam", "done", S.redSub || "done"); edge("redteam", "fragility", "active"); break; }
+      if (e.agent === "fragility") { node("fragility", "done", S.fragSub || "done"); edge("fragility", "chief", "active"); break; }
+      if (e.agent === "compliance") { node("compliance", "done", S.complianceSub || "done"); break; }
+      if (e.agent.startsWith("vendor-")) { const k = "v" + e.agent.slice(7); node(k, "done", S.vendorSub[e.agent.slice(7)] || "done");
+        edge(k, "procurement", "active"); break; }
+      if (e.agent === "procurement") { node("procurement", "done", S.procSub || "done"); VK.forEach(k => edge(k, "procurement", "done")); break; }
+      if (e.agent === "market") { node("market", "done", "shops found"); edge("market", "end", "done"); break; }
+      status(e.agent, e.agent === "lead" ? "plan ready" : `done · ${e.proposals} proposals`, "done");
+      if (e.agent === "lead") { node("lead", "done", "plan ready"); ["Al", "Ti", "Steel"].forEach(k => edge("lead", k, "active")); }
+      else { const k = SHORT[e.agent]; node(k, "done", `${e.proposals} proposals`); step(e.agent, null); edge(k, "verify", "active"); }
+      break;
+    }
+    case "agent_error": {
+      if (e.agent === "market") { node("market", "error", "error"); $("market").innerHTML = "<h2>Market scan</h2>";
+        $("market").append(el("div", "verdict", "Search failed: " + e.error)); break; }
+      if (e.agent.startsWith("vendor-")) { node("v" + e.agent.slice(7), "error", "error"); quoteRow(e.agent.slice(7), {status: "error: " + e.error}); break; }
+      if (e.agent === "chief") break;   // the gate still decides in code; the review event follows
+      if (["compliance", "procurement", "redteam", "requirements"].includes(e.agent)) { node(e.agent, "error", "agent error");
+        if (e.agent === "redteam") edge("redteam", "fragility", "active"); break; }
+      status(e.agent, "error", "error"); addItem(e.agent, el("div", "item why", e.error));
+      const k = SHORT[e.agent]; if (k) { node(k, "error", "error"); edge(k, "verify", "active"); }
+      break;
+    }
+    case "verified":
+      S.proposals.push(e); plot();
+      ["Al", "Ti", "Steel"].forEach(k => edge(k, "verify", "done")); node("verify", "active", "checking");
+      break;
+    case "decision": {
+      if (e.optimum) S.optimum = e.optimum;
+      const sel = S.proposals.find(p => p.id === e.selected_id);
+      S.selected = sel || null;
+      if (S.optMargin == null && S.optimum) {
+        const same = S.checks.find(c => c.design.material === S.optimum.material && c.design.thickness_mm === S.optimum.thickness_mm
+          && Math.abs(c.design.width_mm - S.optimum.width_mm) < 0.05);
+        S.optMargin = same ? same.margin_worst : (sel ? sel.margin_worst : 0);
+      }
+      decision(e); plot();
+      if (e.selected) {
+        const r3 = e.selected.matrix.find(r => r.id === "REQ-003");
+        setPart(e.selected.design, "verified", r3 ? parseFloat(r3.value) : 0, "selected design");
+      }
+      node("verify", "done", `${S.proposals.filter(p => p.label === "verified").length} of ${S.proposals.length} pass`);
+      if (e.selected) edge("verify", "redteam", "active");
+      break;
+    }
+    case "compliance": renderCompliance(e); break;
+    case "compliance_review": renderReview(e); break;
+    case "rfq": S.qty = e.qty; renderRfq(e); VK.forEach(k => edge("compliance", k, "active")); break;
+    case "vendor_step": quoteRow(e.vendor, {status: e.tools.length ? "used " + e.tools.join(", ") : "writing the quote"}); break;
+    case "quote": renderQuote(e); break;
+    case "procurement": renderProcurement(e); break;
+    case "market": renderMarket(e); break;
+    case "run_end":
+      node("end", "done");
+      S.running = false; $("c-time").textContent = e.seconds.toFixed(1) + " s"; done();
+      if (S.replayName) { S.runName = S.replayName; $("package").disabled = false; }
+      if (S.replayName && SNAP.has(S.replayName)) { S.base = S.replayName; renderChangeForm(); }
+      break;
+    case "recorded": S.base = S.runName = e.name; $("package").disabled = false; loadInfo(e.name).then(renderChangeForm); break;
+    case "error": S.running = false; $("decision").innerHTML = "<h2>Decision</h2>"; $("decision").append(el("div", "verdict", e.error)); done(); break;
+  }
+  counters();
+}
+
+
+
+
+// ---- Requirements Desk: brief -> drafted requirement -> a person approves ----
+const RQ = [["part", "part", null], ["load_n", "load", "N"], ["length_mm", "arm length", "mm"], ["max_deflection_mm", "deflection limit", "mm"],
+  ["width_max_mm", "max width", "mm"], ["thickness_max_mm", "max plate thickness", "mm"], ["yield_factor", "yield factor", ""], ["ultimate_factor", "ultimate factor", ""]];
+function reqValue(r, key) {
+  return {width_max_mm: r.width_range_mm[1], thickness_max_mm: r.thickness_range_mm[1]}[key] ?? r[key];
+}
+function renderReqIdle() {
+  const box = $("reqdesk"), keep = $("brief-text") ? $("brief-text").value : (S && S.sampleBrief) || "";
+  box.innerHTML = "<h2>Requirements Desk</h2>";
+  box.append(el("div", "muted small", "Start from a mission brief in plain words. An agent drafts the requirement, every value with its source; code does the arithmetic; you approve before the team starts. Or pick a preset case above and press Run live."));
+  const ta = el("textarea"); ta.id = "brief-text"; ta.value = keep; box.append(ta);
+  const row = el("div", "reqrow"), b = el("button", "primary", "Run from brief"); b.id = "run-brief";
+  b.onclick = ev => { ev.stopPropagation(); const text = $("brief-text").value.trim(); if (!text) return;
+    start(`/api/run?brief=${encodeURIComponent(text)}&model=${$("model").value}`, 1); };
+  row.append(b, el("span", "muted small", "The run stops for your approval after the draft."));
+  box.append(row);
+}
+function renderRequirements(e) {
+  const box = $("reqdesk");
+  if (e.mode === "change") {
+    node("requirements", "done", "changed"); edge("requirements", "lead", "active");
+    box.innerHTML = "<h2>Requirements Desk</h2>";
+    box.append(el("div", "muted small", "Change run: the requirement of an earlier run, edited. See Change impact below."));
+    return;
+  }
+  if (e.mode === "case") {
+    node("requirements", "done", `preset case ${e.requirement.case}`); edge("requirements", "lead", "active");
+    box.innerHTML = "<h2>Requirements Desk</h2>";
+    box.append(el("div", "muted small", `Preset case ${e.requirement.case}: no brief to read, so no approval step. Use "Run from brief" to start from plain words.`));
+    return;
+  }
+  S.req = e.requirement; S.reqDraft = e;
+  node("requirements", "active", "draft ready");
+  box.innerHTML = "<h2>Requirements Desk</h2>";
+  const grid = el("div", "reqgrid"), left = el("div"), right = el("div");
+  left.append(el("div", "cat", "Mission brief"), el("div", "brieftext", e.brief));
+  if (e.draft.open_questions.length) {
+    const ul = el("ul"), qs = e.draft.open_questions;
+    qs.slice(0, 6).forEach(q => ul.append(el("li", "", q)));
+    if (qs.length > 6) ul.append(el("li", "muted", `and ${qs.length - 6} more`));
+    left.append(el("div", "cat", "Open questions from the agent"), ul);
+  }
+  const t = el("table", "rq"); t.id = "rq";
+  t.innerHTML = "<tr><th>requirement</th><th>value</th><th>source</th></tr>";
+  const src = Object.fromEntries(e.draft.sources.map(x => [x.field, x]));
+  const srcKey = {load_n: "payload_mass_kg"};
+  for (const [key, label, unit] of RQ) {
+    const tr = el("tr"), v = reqValue(e.requirement, key), sx = src[key] || src[srcKey[key]];
+    tr.innerHTML = `<td>${label}</td><td class="val" data-key="${key}">${key === "load_n" ? Math.round(v) : v}${unit ? " " + unit : ""}</td>`;
+    const td = el("td");
+    if (key === "load_n" && e.derived.length) td.append(el("div", "src-brief", "code: " + e.derived[0]));
+    if (sx) td.append(el("div", "src-" + sx.source, `${sx.source}: ${sx.note}`));
+    else if (!(key === "load_n" && e.derived.length)) td.append(el("div", "src-assumption", "default (not in the brief)"));
+    tr.append(td); t.append(tr);
+  }
+  right.append(el("div", "cat", "Drafted requirement"), t);
+  if (e.problems.length) right.append(el("div", "no", "Problems: " + e.problems.join("; ")));
+  grid.append(left, right); box.append(grid);
+}
+function renderApproval(e) {
+  const box = $("reqdesk");
+  box.querySelectorAll("#rq td.val").forEach(td => {
+    const key = td.dataset.key; if (key === "part") return;
+    const v = reqValue(e.requirement, key), inp = el("input"); inp.type = "number"; inp.step = "any";
+    inp.value = key === "load_n" ? Math.round(v) : v; inp.dataset.key = key; inp.dataset.orig = inp.value;
+    td.innerHTML = ""; td.append(inp);
+  });
+  const bar = el("div", "approvebar"); bar.id = "approvebar";
+  bar.append(el("b", "", "The graph is paused (LangGraph interrupt). Check the values, edit any, then approve."));
+  const b = el("button", "primary", "Approve and start the design"); b.id = "approve"; b.disabled = true;
+  b.onclick = ev => { ev.stopPropagation(); sendApproval(); };
+  bar.append(b); box.append(bar);
+  if (S.runId) armApproval();
+  else if (S.replay) { b.textContent = "Approved in the recording"; }
+  box.scrollIntoView({behavior: "smooth", block: "center"});
+}
+function armApproval() { const b = $("approve"); if (b && S.runId) b.disabled = false; }
+async function sendApproval() {
+  const edits = {};
+  document.querySelectorAll("#rq input").forEach(i => { if (i.value !== i.dataset.orig) edits[i.dataset.key] = parseFloat(i.value); });
+  $("approve").disabled = true; $("approve").textContent = "Approved, starting...";
+  await fetch(`/api/approve/${S.runId}`, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({edits})});
+}
+function renderApproved(e) {
+  const bar = $("approvebar"); if (bar) bar.remove();
+  document.querySelectorAll("#rq input").forEach(i => { const td = i.parentElement; td.textContent = i.value; });
+  const n = Object.keys(e.edits || {}).length;
+  $("reqdesk").append(el("div", "approved", n ? `✓ Approved with ${n} edit${n > 1 ? "s" : ""}: ${Object.entries(e.edits).map(([k, v]) => `${k} = ${v}`).join(", ")}` : "✓ Approved as drafted"));
+}
+
+// ---- Red Team: an agent attacks the selected design, code re-runs every attack ----
+function cond(a) {
+  const parts = [];
+  if (a.load_multiplier && a.load_multiplier !== 1) parts.push(`x${a.load_multiplier} load`);
+  if (a.thickness_loss_mm) parts.push(`-${a.thickness_loss_mm} mm plate`);
+  if (a.width_loss_mm) parts.push(`-${a.width_loss_mm} mm width`);
+  if (a.length_increase_mm) parts.push(`+${a.length_increase_mm} mm arm`);
+  return parts.join(", ") || "as designed";
+}
+function redLine(text) { const l = $("redlog"); if (l) l.append(el("div", "", text)); }
+function renderRedTeam(e) {
+  const box = $("redteam"), a = e.attacks, n = k => a.filter(x => x.result === k).length;
+  const testable = a.filter(x => x.agent_right !== null), right = testable.filter(x => x.agent_right).length;
+  S.redSub = `${n("confirmed")} risks · ${n("refuted")} refuted`;
+  box.innerHTML = "<h2>Red Team Review</h2>";
+  box.append(el("div", "muted small", "An agent tries to break the selected design with its stress_test tool. Code re-runs every attack and computes the breaking point, so a wrong claim from the red team is caught too."));
+  const bp = el("div", "bp"), b1 = el("div"), b2 = el("div");
+  b1.append(el("b", "", e.breaking_point.load_multiplier ? `x${e.breaking_point.load_multiplier}` : "> x20"), el("span", "", "load it survives"));
+  b2.append(el("b", "", e.breaking_point.thickness_loss_mm != null ? `-${e.breaking_point.thickness_loss_mm} mm` : "any"), el("span", "", "thinner plate it survives"));
+  bp.append(b1, b2); box.append(bp);
+  const tl = el("div", "tallies");
+  if (n("confirmed")) tl.append(el("span", "pill l-fails", `${n("confirmed")} confirmed risks`));
+  if (n("refuted")) tl.append(el("span", "pill l-verified", `${n("refuted")} refuted`));
+  if (n("needs analysis")) tl.append(el("span", "pill l-fragile", `${n("needs analysis")} need analysis`));
+  if (testable.length) tl.append(el("span", "pill", `agent right on ${right} of ${testable.length}`));
+  box.append(tl);
+  const t = el("table", "qt");
+  t.innerHTML = "<tr><th>attack</th><th>conditions</th><th>agent said</th><th>code result</th></tr>";
+  for (const x of a) {
+    const tr = el("tr"), at = el("td");
+    at.append(el("b", "", x.title), el("div", "muted", x.rationale));
+    const res = el("td");
+    const cls = {confirmed: "l-fails", refuted: "l-verified", "needs analysis": "l-fragile"}[x.result];
+    res.append(el("span", "pill " + cls, x.result === "confirmed" ? "confirmed risk" : x.result));
+    if (x.margin_yield != null) res.append(el("div", "muted", `MS ${fmt(x.margin_yield, 2, true)}, ${fmt(x.deflection_mm)} mm`));
+    if (x.agent_right === false) res.append(el("div", "no", "the agent was wrong"));
+    tr.append(at, el("td", "", x.testable ? cond(x) : "not testable here"),
+              el("td", "", x.testable ? (x.expected_to_fail ? "fails" : "survives") : "-"), res);
+    t.append(tr);
+  }
+  box.append(t);
+}
+
+
+// ---- Change impact: a requirement changes after a run, only the steps that read it run again ----
+const CH = [["load_n", "load", "N"], ["length_mm", "arm length", "mm"], ["max_deflection_mm", "deflection limit", "mm"], ["width_max_mm", "max width", "mm"],
+  ["thickness_max_mm", "max plate thickness", "mm"], ["yield_factor", "yield factor", ""], ["ultimate_factor", "ultimate factor", ""], ["qty", "order quantity", "parts"]];
+const CHLABEL = Object.fromEntries(CH.map(([k, label]) => [k, label]));
+const STEPLABEL = {redteam: "Red Team", fragility: "Monte Carlo and trade-offs", chief: "Chief Engineer", compliance: "Compliance Engine",
+  procurement: "Procurement", market: "Market scan"};
+let SNAP = new Set();
+function renderChangeForm() {
+  if (!S.base || !SNAP.has(S.base) || !S.liveReq) return;
+  const box = $("impact"); if ($("change-form")) $("change-form").remove();
+  if (!S.impact) box.innerHTML = "<h2>Change impact</h2>";
+  const form = el("div", S.impact ? "round" : ""); form.id = "change-form";
+  form.append(el("div", "muted small", "The run is saved. Change a requirement or the order quantity: code checks every old design again, and only the steps that read the changed value run again. The rest is reused with no model call."));
+  const grid = el("div", "chgrid");
+  for (const [key, label, unit] of CH) {
+    const lab = el("label", "", label + (unit ? `, ${unit}` : "")), inp = el("input");
+    inp.type = "number"; inp.step = "any"; inp.dataset.key = key;
+    inp.value = inp.dataset.orig = key === "qty" ? S.qty : reqValue(S.liveReq, key);
+    inp.oninput = () => inp.classList.toggle("edited", inp.value !== inp.dataset.orig);
+    lab.append(inp); grid.append(lab);
+  }
+  const row = el("div", "reqrow"), b = el("button", "primary", "Run the change");
+  b.onclick = ev => { ev.stopPropagation(); const edits = {};
+    grid.querySelectorAll("input").forEach(i => { if (i.value !== i.dataset.orig && i.value !== "") edits[i.dataset.key] = +i.value; });
+    start(`/api/run?base=${encodeURIComponent(S.base)}&edits=${encodeURIComponent(JSON.stringify(edits))}&model=${$("model").value}`, 1); };
+  row.append(b, el("span", "muted small", `Baseline: ${S.base}`));
+  form.append(grid, row); box.append(form);
+}
+function num(x) { return Number.isInteger(x) ? x : +x.toFixed(2); }
+function renderImpact(e) {
+  S.impact = e;
+  const box = $("impact"); box.innerHTML = "<h2>Change impact</h2>";
+  box.append(el("div", "muted small", "Every step declares its inputs. A step runs again only if one of them changed; otherwise its saved result is reused. Dashed boxes in the pipeline were reused."));
+  const tl = el("div", "tallies");
+  if (!e.changes.length) tl.append(el("span", "pill", "nothing changed"));
+  for (const c of e.changes) {
+    const cls = {tighter: "l-fragile", looser: "l-verified"}[c.effect] || "";
+    tl.append(el("span", "pill " + cls, `${CHLABEL[c.field] || c.field}: ${num(c.old)} -> ${num(c.new)} ${c.unit} (${c.effect})`));
+  }
+  box.append(tl);
+  const head = el("div", "round"), h = el("div", "head");
+  h.append(el("span", "pill " + (e.search === "kept" ? "l-verified" : "l-fragile"), e.search === "kept" ? "SEARCH KEPT" : "SEARCH AGAIN"),
+           el("span", "", e.why.charAt(0).toUpperCase() + e.why.slice(1) + "."));
+  head.append(h); box.append(head);
+  const grid = el("div", "impgrid"), left = el("div"), right = el("div");
+  left.append(el("div", "cat", `Old designs checked again in code: ${e.still_verified} of ${e.were_verified} still verified`));
+  const t = el("table", "qt"); t.innerHTML = "<tr><th>id</th><th>design</th><th>mass</th><th>before</th><th></th><th>after</th></tr>";
+  const order = r => (r.before !== r.after ? 0 : 1);
+  for (const r of [...e.pool].sort((a, b) => order(a) - order(b))) {
+    const tr = el("tr"), b4 = el("td"), af = el("td"), d = r.design;
+    b4.append(pill(r.before)); af.append(pill(r.after));
+    if (r.before !== r.after && r.reason) af.append(el("div", "muted", r.reason));
+    tr.append(el("td", "", r.id), el("td", "", `${SHORT[d.material]} ${d.width_mm} x ${d.thickness_mm}`), el("td", "", r.mass_g == null ? "-" : Math.round(r.mass_g) + " g"),
+              b4, el("td", "arrow-to", r.before !== r.after ? "->" : "="), af);
+    t.append(tr);
+  }
+  left.append(t);
+  right.append(el("div", "cat", "Steps"));
+  const st = el("table", "qt"); st.id = "steps-table"; st.innerHTML = "<tr><th>step</th><th></th><th>why</th></tr>";
+  right.append(st); const sum = el("div", "small"); sum.id = "steps-sum"; sum.style.marginTop = "8px"; right.append(sum);
+  grid.append(left, right); box.append(grid);
+  S.steps = [];
+  const kept = e.search === "kept";
+  addStep("Design search: Lead and 3 specialists", kept ? "reused" : "rerun", kept ? "no model call" : "the old search no longer answers the requirement", kept ? e.saved_usd : 0);
+  addStep("Verifier", "code", "every proposal checked again, free", 0);
+  if (kept) {
+    ["lead", "Al", "Ti", "Steel"].forEach(k => { S.reusedNodes.add(k); node(k, "done", "reused"); });
+    [["requirements", "lead"], ["lead", "Al"], ["lead", "Ti"], ["lead", "Steel"]].forEach(([a, b]) => edge(a, b, "done"));
+    status("lead", "reused", "done"); AGENTS.forEach(a => status(a, "reused from the baseline", "done"));
+    $("plan").textContent = "The design search of the baseline run stands. No agent ran here.";
+  }
+}
+function addStep(label, action, why, saved) {
+  const st = $("steps-table"); if (!st) return;
+  S.steps.push({action, saved});
+  const tr = el("tr"), a = el("td");
+  a.append(el("span", "pill " + {reused: "l-verified", rerun: "l-fragile", code: ""}[action], {reused: "reused", rerun: "ran again", code: "code"}[action]));
+  tr.append(el("td", "", label), a, el("td", "muted", why)); st.append(tr);
+  const n = k => S.steps.filter(x => x.action === k).length, usd = S.steps.reduce((x, y) => x + (y.saved || 0), 0);
+  $("steps-sum").textContent = `${n("reused")} reused, ${n("rerun")} ran again. Agent calls not repeated: about $${usd.toFixed(3)}.`;
+}
+function stepRow(e) {
+  const id = e.step.startsWith("vendor-") ? "v" + e.step.slice(7) : e.step;
+  if (e.action === "reused") S.reusedNodes.add(id); else S.reusedNodes.delete(id);
+  const label = STEPLABEL[e.step] || e.step.replace("vendor-", "Vendor ");
+  const pretty = k => k.startsWith("req.") ? (CHLABEL[k.slice(4)] || k.slice(4)) : ({qty: "order quantity", design: "the selected design", attacks: "the Red Team findings", quotes: "the quotes", verified: "the verified designs"}[k] || k);
+  addStep(label, e.action, e.action === "reused" ? "inputs unchanged" : "changed: " + (e.changed || []).map(pretty).join(", "), e.saved_usd);
+}
+
+// ---- Chief Engineer review: ship, redesign or escalate, one block per round ----
+const VERDICT = {ship: ["l-verified", "SHIP"], redesign: ["l-fragile", "REDESIGN"], escalate: ["l-fails", "ESCALATE"]};
+function renderBoard(e) {
+  S.reviews.push(e);
+  const box = $("board"); box.innerHTML = "<h2>Chief Engineer Review</h2>";
+  box.append(el("div", "muted small", "Code marks which findings block a release. An agent proposes ship, redesign or escalate and writes the directive. Code has the last word: no release past a blocking finding, no redesign without one, no loop past the round limit."));
+  for (const r of S.reviews) {
+    const d = r.design, blk = el("div", "round"), head = el("div", "head");
+    head.append(el("span", "pill " + VERDICT[r.decision][0], VERDICT[r.decision][1]),
+                el("b", "", `Round ${r.round} of ${r.max_rounds}`), el("span", "muted", `${d.material}, ${d.width_mm} x ${d.thickness_mm} mm`));
+    blk.append(head);
+    if (r.overruled) blk.append(el("div", "overruled", `The agent proposed ${r.proposed}. Code overruled it: ${r.rule}.`));
+    if (r.rationale) blk.append(el("div", "small", r.rationale));
+    const t = el("table", "qt");
+    t.innerHTML = "<tr><th>id</th><th>source</th><th>finding</th><th>value</th><th>limit</th><th></th></tr>";
+    for (const f of r.findings) {
+      const tr = el("tr"), what = el("td"), st = el("td");
+      what.append(el("b", "", f.title), el("div", "muted", f.detail));
+      st.append(el("span", "pill " + (f.blocking ? "l-fails" : "l-verified"), f.blocking ? "blocking" : "ok"));
+      tr.append(el("td", "", f.id), el("td", "", f.source), what, el("td", "", f.value), el("td", "", f.limit), st);
+      t.append(tr);
+    }
+    blk.append(t);
+    if (r.directive) blk.append(el("div", "memo", "Directive to the team: " + r.directive));
+    if (r.decision === "escalate") blk.append(el("div", "memo", "Held for a person. The design is not released, so no request for quote goes out. Options: accept the risk with a waiver, relax a requirement, or open the envelope."));
+    if (r.conditions && r.conditions.length) { const ul = el("ul", "small"); r.conditions.forEach(c => ul.append(el("li", "", c)));
+      blk.append(el("div", "small muted", "Released with open conditions:"), ul); }
+    box.append(blk);
+  }
+  const tag = e.round > 1 ? ` · round ${e.round}` : "";
+  if (e.decision === "ship") { node("chief", "done", "ship" + tag); edge("chief", "compliance", "active"); }
+  if (e.decision === "redesign") { node("chief", "done", "redesign"); edge("chief", "lead", "active"); }
+  if (e.decision === "escalate") { node("chief", "error", "escalated"); edge("chief", "compliance", "active");
+    [...VK, "procurement", "market"].forEach(k => node(k, "", "held: not released")); }
+}
+// the team goes around again: clear the loop part of the graph, keep everything already found
+function redesign(e) {
+  edge("chief", "lead", "done");
+  ["Al", "Ti", "Steel", "verify", "redteam", "fragility"].forEach(k => node(k, "", `round ${e.round}`));
+  [["lead", "Al"], ["lead", "Ti"], ["lead", "Steel"], ["Al", "verify"], ["Ti", "verify"], ["Steel", "verify"], ["verify", "redteam"],
+   ["redteam", "fragility"], ["fragility", "chief"]].forEach(([a, b]) => edge(a, b, ""));
+  $("nt-lead").textContent = `Round ${e.round}. Chief Engineer: ${e.directive}`;
+  for (const a of AGENTS) addItem(a, el("div", "item turn", `round ${e.round}: sent back by the Chief Engineer`));
+}
+
+
+// ---- Fragility: Monte Carlo on the selected design ----
+const INPUT_LABEL = {load: "load", thickness_mm: "plate thickness", width_mm: "width", strength: "material strength", modulus: "stiffness (E)"};
+function pct(x) { return x === 0 ? "< 0.05%" : (x * 100).toFixed(x < 0.01 ? 2 : 1) + "%"; }
+function renderFragility(e) {
+  S.fragSub = `P(fail) ${pct(e.p_failure)}`;
+  const box = $("fragility"); box.innerHTML = "<h2>Fragility (Monte Carlo)</h2>";
+  box.append(el("div", "muted small", `${e.samples} samples of the selected design, each with its own load, plate thickness, width, strength and stiffness drawn from the scatter below. Plain code, no model.`));
+  const bp = el("div", "bp"), b1 = el("div"), b2 = el("div"), b3 = el("div");
+  b1.append(el("b", "", pct(e.p_failure)), el("span", "", `probability of failure (${e.failures} of ${e.samples})`));
+  b2.append(el("b", "", fmt(e.p5, 2, true)), el("span", "", "margin in the worst 5%"));
+  b3.append(el("b", "", fmt(e.p50, 2, true)), el("span", "", "typical margin"));
+  bp.append(b1, b2, b3); box.append(bp);
+  // histogram of the governing margin
+  const W = 520, H = 120, ns = "http://www.w3.org/2000/svg", svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H + 22}`); svg.style.width = "100%";
+  const {lo, hi, counts} = e.histogram, max = Math.max(...counts), bw = W / counts.length, x = v => (v - lo) / (hi - lo || 1) * W;
+  counts.forEach((c, i) => {
+    const r = document.createElementNS(ns, "rect"), center = lo + (i + 0.5) * (hi - lo) / counts.length;
+    Object.entries({x: i * bw + 1, y: H - c / max * H, width: bw - 2, height: c / max * H, rx: 2,
+      fill: center < 0 ? "var(--bad)" : "var(--good)", opacity: 0.85}).forEach(([k, v]) => r.setAttribute(k, v));
+    const t = document.createElementNS(ns, "title"); t.textContent = `${c} samples with margin ${center.toFixed(2)}`; r.append(t);
+    svg.append(r);
+  });
+  if (lo < 0 && hi > 0) { const l = document.createElementNS(ns, "line"); Object.entries({x1: x(0), x2: x(0), y1: 0, y2: H, stroke: "var(--bad)", "stroke-dasharray": "4 3", "stroke-width": 1.5}).forEach(([k, v]) => l.setAttribute(k, v)); svg.append(l); }
+  [[lo, "start"], [hi, "end"]].forEach(([v, anchor]) => { const t = document.createElementNS(ns, "text"); Object.entries({x: anchor === "start" ? 0 : W, y: H + 16, "text-anchor": anchor}).forEach(([k, val]) => t.setAttribute(k, val)); t.textContent = "MS " + fmt(v, 2, true); svg.append(t); });
+  box.append(el("div", "cat", "Governing margin across all samples (red = fails)"), svg);
+  // sensitivity
+  box.append(el("div", "cat", "Which scatter matters most"));
+  Object.entries(e.sensitivity).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).forEach(([k, c]) => {
+    const row = el("div", "sens"), track = el("div", "track"), fill = el("i");
+    fill.style.left = c < 0 ? (50 + c * 50) + "%" : "50%"; fill.style.width = Math.abs(c) * 50 + "%";
+    fill.style.background = c < 0 ? "var(--bad)" : "var(--good)";
+    track.append(fill);
+    row.append(el("span", "", INPUT_LABEL[k] || k), track, el("span", "mono", (c > 0 ? "+" : "") + c.toFixed(2)));
+    box.append(row);
+  });
+  box.append(el("div", "muted small", `Red bar: more of it lowers the margin. Assumed scatter (1 sigma): load ${e.scatter.load * 100}%, plate ${e.scatter.thickness_mm} mm, width ${e.scatter.width_mm} mm, strength ${e.scatter.strength * 100}%, modulus ${e.scatter.modulus * 100}%.`));
+}
+
+// ---- Trade-offs: weigh mass, cost and robustness; the ranking updates as you move the sliders ----
+function renderTradeoffs() {
+  const e = S.trade; if (!e || !e.rows.length) return;
+  const box = $("tradeoffs");
+  if (!$("w-mass")) {
+    box.innerHTML = "<h2>Trade-offs</h2>";
+    box.append(el("div", "muted small", "Every verified design with its mass, a cost estimate from a neutral reference shop, its worst-case margin and its probability of failure. The Verifier picks the lightest; move the sliders to weigh things differently."));
+    const sl = el("div", "sliders");
+    [["mass", "mass", 100], ["cost", "cost", 0], ["robust", "robustness", 0]].forEach(([id, label, v]) => {
+      const lab = el("label"), inp = el("input"); inp.type = "range"; inp.min = 0; inp.max = 100; inp.value = v; inp.id = "w-" + id;
+      inp.oninput = renderTradeoffs; lab.append(el("div", "", `${label} `), inp); sl.append(lab);
+    });
+    box.append(sl);
+    const t = el("table", "qt"); t.id = "trade"; box.append(t);
+  }
+  const w = {mass: +$("w-mass").value, cost: +$("w-cost").value, robust: +$("w-robust").value};
+  const total = w.mass + w.cost + w.robust || 1, rows = e.rows;
+  const span = k => [Math.min(...rows.map(r => r[k])), Math.max(...rows.map(r => r[k]))];
+  const norm = (v, [a, b]) => b > a ? (v - a) / (b - a) : 0;
+  const sm = span("mass_g"), sc = span("cost_usd"), sr = span("margin_worst");
+  const scored = rows.map(r => ({...r, score: (w.mass * norm(r.mass_g, sm) + w.cost * norm(r.cost_usd, sc) + w.robust * (1 - norm(r.margin_worst, sr))) / total}))
+    .sort((a, b) => a.score - b.score);
+  const t = $("trade");
+  t.innerHTML = "<tr><th>design</th><th>mass</th><th>cost each</th><th>worst-case MS</th><th>P(fail)</th><th>score</th></tr>";
+  scored.forEach((r, i) => {
+    const tr = el("tr"); if (i === 0) tr.className = "pick";
+    const d = r.design, tag = [i === 0 ? "your pick" : "", r.id === e.selected_id ? "Verifier's pick" : ""].filter(Boolean).join(" · ");
+    tr.innerHTML = `<td><b>${r.id}</b> ${d.material.split(" ")[0]} ${d.width_mm} x ${d.thickness_mm}${tag ? `<div class="muted">${tag}</div>` : ""}</td>
+      <td>${Math.round(r.mass_g)} g</td><td>$${r.cost_usd.toFixed(0)}</td><td>${fmt(r.margin_worst, 2, true)}</td><td>${pct(r.p_failure)}</td><td>${r.score.toFixed(2)}</td>`;
+    t.append(tr);
+  });
+}
+
+// ---- Compliance Engine, Supplier Desk, Market scan ----
+const CICON = {pass: "✓", fail: "✕", action: "!", confirm: "?", info: "i"};
+const CARD0 = {
+  compliance: "<h2>Compliance Engine</h2><div class='muted'>Checks every rule on the selected design once the Verifier picks it.</div>",
+  suppliers: "<h2>Supplier Desk</h2><div class='muted'>Sends a request for quote to the approved vendors once the design is cleared.</div>",
+  market: "<h2>Market scan</h2><div class='muted'>Searches the web for shops outside the approved list.</div>",
+  redteam: "<h2>Red Team Review</h2><div class='muted'>Tries to break the selected design once the Verifier picks it.</div>",
+  fragility: "<h2>Fragility (Monte Carlo)</h2><div class='muted'>Samples real-world scatter on the selected design.</div>",
+  impact: "<h2>Change impact</h2><div class='muted'>After a run, change a requirement here. Code checks every old design again and only the steps that read the change run again.</div>",
+  board: "<h2>Chief Engineer Review</h2><div class='muted'>Reads the Red Team and Monte Carlo findings, then ships the design, sends it back to the team or escalates.</div>",
+  tradeoffs: "<h2>Trade-offs</h2><div class='muted'>Weighs mass, cost and robustness across every verified design.</div>",
+};
+function resetCards() { for (const [id, html] of Object.entries(CARD0)) $(id).innerHTML = html; }
+function renderCompliance(e) {
+  S.complianceSeen = true;
+  const items = e.items, box = $("compliance");
+  const n = k => items.filter(i => (i.status === "confirm" ? "action" : i.status) === k).length;
+  const sum = e.summary || {pass: n("pass"), fail: n("fail"), action: n("action")};
+  S.complianceSub = `${sum.pass} pass · ${sum.action} open · ${sum.fail} fail`;
+  box.innerHTML = "<h2>Compliance Engine</h2>";
+  box.append(el("div", "muted small", "Every rule is checked by code against the selected design. The review agent explains the results and never changes a status. Illustrative, not a compliance determination."));
+  const sc = el("div", "score");
+  sc.append(el("b", "", `${sum.pass} / ${sum.pass + sum.fail + sum.action}`), el("span", "muted", "rules pass"));
+  const tl = el("div", "tallies");
+  if (sum.action) tl.append(el("span", "pill l-fragile", `${sum.action} need evidence or action`));
+  if (sum.fail) tl.append(el("span", "pill l-fails", `${sum.fail} fail`));
+  sc.append(tl); box.append(sc);
+  const rv = el("div", "review"); rv.id = "review"; rv.append(el("span", "muted", "Review agent is reading the results...")); box.append(rv);
+  let cat = null;
+  for (const i of items) {
+    if (i.category && i.category !== cat) { cat = i.category; box.append(el("div", "cat", cat)); }
+    const st = i.status === "confirm" ? "action" : i.status;
+    const row = el("div", "crow"), txt = el("div");
+    txt.append(el("b", "", `${i.id ? i.id + " " : ""}${i.title}`));
+    const line = [i.value && i.limit ? `${i.value} (limit ${i.limit})` : i.value, i.detail].filter(Boolean).join(" · ");
+    if (line) txt.append(el("div", "d", line));
+    if (i.margin != null) {
+      const bar = el("div", "mbar"), fill = el("i");
+      fill.style.width = Math.max(4, Math.min(100, Math.abs(i.margin) * 100)) + "%";
+      fill.style.background = i.margin >= 0 ? "var(--good)" : "var(--bad)";
+      bar.title = `${(i.margin * 100).toFixed(0)}% from the limit`; bar.append(fill); txt.append(bar);
+    }
+    row.append(el("span", "cs cs-" + st, CICON[st]), txt, el("span", "ref", i.standard || i.ref || ""));
+    box.append(row);
+  }
+  if (e.matrix && e.matrix.rows.length > 1) {
+    box.append(el("div", "cat", "Every verified design against every rule"));
+    const t = el("table", "heat"), head = el("tr");
+    head.append(el("th", "", ""));
+    e.matrix.rules.forEach(r => head.append(el("th", "", r)));
+    t.append(head);
+    for (const row of e.matrix.rows) {
+      const tr = el("tr"); tr.append(el("td", "lbl", `${row.id} · ${Math.round(row.mass_g)} g`));
+      row.statuses.forEach((st, j) => { const td = el("td", "c"), i = el("i", "c-" + st); i.title = `${row.id} ${e.matrix.rules[j]}: ${st}`; td.append(i); tr.append(td); });
+      t.append(tr);
+    }
+    box.append(t);
+  }
+}
+function renderReview(e) {
+  const rv = $("review"); if (!rv) return;
+  rv.innerHTML = "";
+  rv.append(el("b", "", "Review agent"), el("div", "", e.summary));
+  if (e.top_risks.length) { const ul = el("ul"); e.top_risks.forEach(r => ul.append(el("li", "", r))); rv.append(el("div", "cat", "Top risks"), ul); }
+  if (e.actions.length) { const ul = el("ul"); e.actions.forEach(a => ul.append(el("li", "", `${a.rule_id} · ${a.owner}: ${a.action}`))); rv.append(el("div", "cat", "Actions"), ul); }
+}
+function renderRfq(e) {
+  S.qty = e.qty;
+  const box = $("suppliers"); box.innerHTML = "<h2>Supplier Desk</h2>";
+  box.append(el("div", "muted small", "Approved vendor list (sample data). Each vendor is an agent with its own stock and cost tools. Code checks every vendor's eligibility and every quoted price."));
+  box.append(el("div", "rfq", e.text));
+  const t = el("table", "qt"); t.id = "quotes";
+  t.innerHTML = "<tr><th>vendor</th><th>status</th><th>price each</th><th>lead</th><th>code checks</th></tr>";
+  for (const v of e.vendors) {
+    const tr = el("tr"); tr.id = "q-" + v.id;
+    tr.innerHTML = `<td><b>${v.name}</b></td><td class="st">waiting</td><td class="pr">-</td><td class="ld">-</td><td class="chk">-</td>`;
+    t.append(tr);
+  }
+  box.append(t);
+}
+function quoteRow(id, {status}) { const tr = $("q-" + id); if (tr && status) tr.querySelector(".st").textContent = status; }
+function renderQuote(e) {
+  const tr = $("q-" + e.vendor); if (!tr) return;
+  const q = e.quote;
+  tr.querySelector("td").innerHTML = `<b>${e.name}</b><div class="muted">${e.location} · ${e.certifications.join(", ")}${e.dfars_melt ? " · DFARS melt" : ""}</div>`;
+  tr.querySelector(".st").innerHTML = q.bid ? '<span class="pill l-verified">bid</span>' : '<span class="pill l-fails">no bid</span>';
+  tr.querySelector(".pr").textContent = q.bid && q.price_each_usd ? "$" + q.price_each_usd.toFixed(2) : "-";
+  tr.querySelector(".ld").textContent = q.bid && q.lead_time_days ? q.lead_time_days + " days" : "-";
+  const chk = tr.querySelector(".chk"); chk.innerHTML = "";
+  if (e.blockers.length) chk.append(el("div", "no", "not eligible: " + e.blockers.join("; ")));
+  e.flags.forEach(f => chk.append(el("div", "no", f)));
+  if (q.bid && !e.flags.length) chk.append(el("div", "ok", `✓ eligible, price matches the shop estimate ($${e.estimate.price_each_usd.toFixed(2)})`));
+  if (!q.bid && !e.blockers.length) chk.append(el("div", "", (q.no_bid_reasons || []).join("; ")));
+  S.vendorSub[e.vendor] = q.bid ? `bid $${q.price_each_usd?.toFixed(0)}` : "no bid";
+}
+function renderProcurement(e) {
+  const win = e.ranking[0];
+  S.procSub = win ? `${win.name.replace(" (sample)", "")}` : "no valid bid";
+  for (const r of e.ranking) { const tr = $("q-" + r.vendor); if (tr) tr.querySelector(".chk").append(el("div", "muted", `score ${r.score} (0 is best)`)); }
+  if (win) { const tr = $("q-" + win.vendor); if (tr) tr.classList.add("win"); }
+  const box = $("suppliers");
+  const m = el("div", "memo");
+  m.append(el("b", "", win ? `Selected: ${win.name}, $${win.total_usd.toFixed(2)} for ${e.qty}, ${win.lead_time_days} days` : "No valid bid"),
+           el("div", "muted small", `Ranked by code: price ${e.weights.price}, lead time ${e.weights.lead_time}. Memo by the procurement agent:`),
+           el("div", "", e.memo || ""));
+  box.append(m);
+}
+function renderMarket(e) {
+  const box = $("market"); box.innerHTML = "<h2>Market scan</h2>";
+  box.append(el("div", "muted small", "Real shops found by a web search agent, outside the approved list. Only companies whose link came back in the search results are shown. Certifications are as stated on their sites, not verified."));
+  if (!e.vendors.length) box.append(el("div", "verdict", "No vendor with a checked link was found."));
+  for (const v of e.vendors) {
+    const row = el("div", "vrow"), a = el("a", "", v.name);
+    a.href = v.url; a.target = "_blank"; a.rel = "noopener noreferrer";
+    const head = el("div", "row"); head.style.display = "flex"; head.style.justifyContent = "space-between"; head.style.gap = "8px";
+    head.append(a, el("span", "pill l-verified", "link checked"));
+    row.append(head, el("div", "d", v.location), el("div", "d", v.capabilities), el("div", "d", "Certifications: " + v.certifications));
+    box.append(row);
+  }
+  box.append(el("div", "vfoot", `${e.queries.length} searches: ${e.queries.map(q => `"${q}"`).join(", ")} · ${e.sources} pages found · ${e.dropped} dropped (link not in the results)`));
+}
+
+// ---- open a card large in the middle; the same element moves, so live updates keep landing in it ----
+let expanded = null, placeholder = null;
+function expand(card) {
+  placeholder = el("div", card.className + " placeholder"); placeholder.style.height = card.offsetHeight + "px";
+  card.replaceWith(placeholder); $("backdrop").append(card);
+  card.classList.add("expanded"); $("backdrop").classList.add("open"); expanded = card;
+  if (card.classList.contains("chart")) plot();
+}
+function collapse() {
+  if (!expanded) return;
+  expanded.classList.remove("expanded"); placeholder.replaceWith(expanded);
+  $("backdrop").classList.remove("open");
+  const wasChart = expanded.classList.contains("chart"); expanded = null; placeholder = null;
+  if (wasChart) plot();
+}
+document.addEventListener("click", ev => {
+  if (expanded) { if (ev.target === $("backdrop") || ev.target.closest("#close")) collapse(); return; }
+  if (ev.target.closest("textarea, input, label")) return;
+  const card = ev.target.closest(".lane, .chart, .decision, .viewer, .compliance, .suppliers, .market, .pipeline, .redteam, .reqdesk, .fragility, .tradeoffs, .board");
+  if (card && !ev.target.closest("button, select, a")) expand(card);
+});
+document.addEventListener("keydown", ev => { if (ev.key === "Escape") collapse(); });
+
+function start(url, speed) {
+  collapse();
+  if (source) source.close();
+  const sample = S && S.sampleBrief;
+  S = fresh(); S.speed = speed; S.sampleBrief = sample; S.replay = url.includes("/api/replay");
+  S.replayName = S.replay ? new URL(url, location.href).searchParams.get("name") : null; buildTeam(); plot(); counters();
+  if (!url.includes("brief=")) renderReqIdle();
+  $("decision").innerHTML = "<h2>Decision</h2><div class='muted'>Waiting for the team.</div>";
+  resetCards(); drawGraph();
+  $("c-verified").textContent = "-"; $("c-time").textContent = "0.0 s";
+  $("run").disabled = $("replay").disabled = $("package").disabled = true;
+  source = new EventSource(url);
+  source.onmessage = m => handle(JSON.parse(m.data));
+  source.onerror = () => { source.close(); done(); };
+}
+function done() { $("run").disabled = $("replay").disabled = false; if (S) S.running = false; }
+
+async function loadInfo(select) {
+  const info = await (await fetch("/api/info")).json();
+  SNAP = new Set(info.snapshots || []);
+  if (S) S.sampleBrief = info.sample_brief;
+  if ($("brief-text") && !$("brief-text").value) $("brief-text").value = info.sample_brief || "";
+  if (!$("case").options.length) {
+    for (const [k, r] of Object.entries(info.cases)) $("case").append(new Option(`Case ${k}: ${r.load_n} N, ${r.length_mm} mm`, k));
+    $("case").value = "E";
+    for (const m of info.models) $("model").append(new Option(m.replace("claude-", ""), m));
+    $("model").value = info.models.find(m => m.includes("haiku")) || info.models[0];
+  }
+  $("recording").innerHTML = "";
+  for (const r of info.recordings) $("recording").append(new Option(r, r));
+  if (!info.recordings.length) $("recording").append(new Option("no recordings yet", ""));
+  if (select) $("recording").value = select;
+}
+
+$("run").onclick = () => start(`/api/run?case=${$("case").value}&model=${$("model").value}`, 1);
+$("replay").onclick = () => { const r = $("recording").value; if (r) start(`/api/replay?name=${encodeURIComponent(r)}&speed=${$("speed").value}`, +$("speed").value); };
+$("package").onclick = () => { if (S && S.runName) window.open(`/api/package?name=${encodeURIComponent(S.runName)}`, "_blank"); };
+$("theme").onclick = () => {
+  const root = document.documentElement, dark = getComputedStyle(root).colorScheme.includes("dark");
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("theme", root.dataset.theme); } catch (e) {}
+  if (S) plot();
+};
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+try { if (!localStorage.getItem("theme")) document.documentElement.dataset.theme = "dark"; } catch (e) { document.documentElement.dataset.theme = "dark"; }
+S = fresh(); buildTeam(); resetCards(); renderReqIdle(); plot(); loadInfo(); tick(); requestAnimationFrame(drawPart);
+</script>
+</body>
+</html>

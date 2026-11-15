@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "team": "./design_agent/studio.py:team"
+  },
+  "env": ".env"
+}

@@ -23,6 +23,11 @@ def _label(c: Check) -> str:
     return "verified"
 
 
+def label(c: Check) -> str:
+    """The label for a raw check, including designs outside the envelope (verify() catches those before checking)."""
+    return "out of envelope" if "REQ-004" in _failed(c) else _label(c)
+
+
 def verify(p: Proposal, req: Requirement) -> Record:
     d = p.design
     (wmin, wmax), (tmin, tmax) = req.width_range_mm, req.thickness_range_mm

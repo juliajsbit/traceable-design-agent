@@ -1,0 +1,29 @@
+{
+  "note": "Sample data for the demo. These vendors, rates and lead times are made up.",
+  "vendors": [
+    {
+      "id": "A", "name": "Vendor A (sample)", "location": "Long Beach, CA",
+      "certifications": ["AS9100D", "ITAR registered"], "dfars_melt": true,
+      "stock": {"Al 6061-T6": [6, 8, 10, 12, 16, 20, 25, 30], "Ti-6Al-4V": [8, 10, 12, 16, 20, 25], "Steel 4130": [6, 8, 10, 12, 16, 20]},
+      "machines": ["3-axis", "5-axis"], "rate_usd_h": 135, "margin": 0.18, "base_lead_days": 10, "shop_load": 0.85
+    },
+    {
+      "id": "B", "name": "Vendor B (sample)", "location": "Torrance, CA",
+      "certifications": ["AS9100D"], "dfars_melt": true,
+      "stock": {"Al 6061-T6": [3, 4, 5, 6, 8, 10, 12, 16, 20, 25], "Steel 4130": [3, 4, 5, 6, 8, 10, 12]},
+      "machines": ["3-axis"], "rate_usd_h": 98, "margin": 0.15, "base_lead_days": 7, "shop_load": 0.6
+    },
+    {
+      "id": "C", "name": "Vendor C (sample)", "location": "Gardena, CA",
+      "certifications": ["ISO 9001"], "dfars_melt": true,
+      "stock": {"Al 6061-T6": [6, 8, 10, 12, 16, 20, 25, 30], "Ti-6Al-4V": [10, 12, 16, 20], "Steel 4130": [8, 10, 12, 16, 20, 25]},
+      "machines": ["3-axis"], "rate_usd_h": 78, "margin": 0.12, "base_lead_days": 5, "shop_load": 0.4
+    },
+    {
+      "id": "D", "name": "Vendor D (sample)", "location": "Phoenix, AZ",
+      "certifications": ["AS9100D"], "dfars_melt": false,
+      "stock": {"Al 6061-T6": [6, 8, 10, 12, 16, 20, 25], "Ti-6Al-4V": [6, 8, 10, 12, 16, 20, 25, 30], "Steel 4130": [6, 8, 10, 12, 16]},
+      "machines": ["3-axis", "5-axis"], "rate_usd_h": 112, "margin": 0.16, "base_lead_days": 6, "shop_load": 0.5
+    }
+  ]
+}

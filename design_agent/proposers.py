@@ -1,9 +1,10 @@
 """Proposers suggest designs and make claims about them. The verifier decides what is true.
 
-Three competitors:
-- naive: fast grid search with a classic mistake
-- llm:   a model proposes designs from the requirement alone
-- agent: the same model, but it can call the physics check as a tool before it commits
+The competitors:
+- naive:     fast grid search with a classic mistake
+- llm:       a model proposes designs from the requirement alone
+- agent:     the same model, but it can call the physics check as a tool before it commits
+- langgraph: the same agent built with LangGraph instead of a plain loop (graph_agent.py)
 """
 import json
 from itertools import product
@@ -199,4 +200,9 @@ class AgentProposer(_ModelProposer):
         raise RuntimeError(f"agent did not finish in {self.max_turns} turns")
 
 
-PROPOSERS = {"naive": NaiveProposer, "llm": LLMProposer, "agent": AgentProposer}
+def _langgraph(*args, **kwargs):
+    from .graph_agent import LangGraphProposer  # imported late: it imports from this module
+    return LangGraphProposer(*args, **kwargs)
+
+
+PROPOSERS = {"naive": NaiveProposer, "llm": LLMProposer, "agent": AgentProposer, "langgraph": _langgraph}

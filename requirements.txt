@@ -2,3 +2,9 @@ anthropic>=2.3
 pydantic>=2.14
 python-dotenv
 pytest
+langgraph>=1.2
+langchain-anthropic>=1.7
+fastapi>=0.160
+uvicorn>=0.50
+httpx
+langgraph-cli[inmem]
