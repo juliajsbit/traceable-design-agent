@@ -1,32 +1,35 @@
 """A design team, from a mission brief to a part someone can make.
 
-    START -> requirements -> approve -> lead -> ...
+    START -> requirements_desk -> human_approval -> change_impact -> lead_engineer -> ...
 
-                 +----------------- redesign, with a directive -----------------+
-                 v                                                              |
-    ... -> lead -> specialist (Al) ----+                                        |
-                -> specialist (Ti) ----+-> verify -> redteam -> fragility -> review -> compliance -> vendor A --+
-                -> specialist (Steel) -+                                                          -> vendor B --+-> procurement -> market -> END
-                                                                                                  -> vendor C --+
-                                                                                                  -> vendor D --+
+                         +------------------------ redesign, with a directive ------------------------+
+                         v                                                                            |
+    ... -> lead_engineer -> material_specialist (Al) ----+                                              |
+                        -> material_specialist (Ti) ----+-> verifier -> red_team_review -> monte_carlo -> chief_engineer
+                        -> material_specialist (Steel) -+
+    chief_engineer -> compliance_engine -> supplier_agent x4 (in parallel) -> procurement -> market_scan -> END
 
-requirements: an agent turns a brief into a Requirement, every value with its source; code does the arithmetic
-approve:      the graph stops with interrupt() until a person approves or edits the requirement
-lead:         a model reads the requirement and writes one note per material
-specialist:   the LangGraph tool agent from graph_agent.py, one per material, all running at once
-verify:       no model; recomputes every proposal and picks the lightest verified design
-redteam:      an agent tries to break the selected design; code re-runs every attack it claims
-fragility:    no model; Monte Carlo on the selected design, and mass, cost, margin and risk for every verified design
-review:       the Chief Engineer: code marks the blocking findings, an agent proposes ship, redesign or escalate,
-              code has the last word; a redesign goes back to the lead, an escalation holds the purchase
-compliance:   the Compliance Engine checks rules in code; a review agent explains the gaps and proposes actions
-vendor:       one agent per approved vendor answers the request for quote with its own shop tools
-procurement:  code checks and ranks the quotes; a model writes the memo
-market:       a model with web search finds real shops outside the approved list
+requirements_desk:   an agent turns a brief into a Requirement, every value with its source; code does the arithmetic
+human_approval:      the graph stops with interrupt() until a person approves or edits the requirement
+change_impact:       only in a change run (see below); otherwise passes through
+lead_engineer:       a model reads the requirement and writes one note per material
+material_specialist: the LangGraph tool agent from graph_agent.py, one per material, all running at once
+verifier:            no model; recomputes every proposal and picks the lightest verified design
+red_team_review:     an agent tries to break the selected design; code re-runs every attack it claims
+monte_carlo:         no model; Monte Carlo on the selected design, and mass, cost, margin and risk for every verified design
+chief_engineer:      code marks the blocking findings, an agent proposes ship, redesign or escalate,
+                     code has the last word; a redesign goes back to the lead, an escalation holds the purchase
+compliance_engine:   checks rules in code; a review agent explains the gaps and proposes actions
+supplier_agent:      one agent per approved vendor answers the request for quote with its own shop tools
+procurement:         code checks and ranks the quotes; a model writes the memo
+market_scan:         a model with web search finds real shops outside the approved list
 
 A run can also start from an earlier run, the baseline, with a changed requirement (impact.py). The
-impact node then checks the old designs again and keeps the search when it can, and every later step
+change_impact node then checks the old designs again and keeps the search when it can, and every later step
 runs only if one of its inputs changed.
+
+Node names are what Studio and LangSmith show. Event and agent names (emit) stay short, because the
+dashboard and the saved recordings use them.
 
 Every step is sent to emit() as a small dict. The live dashboard (server.py) draws those events.
 """
@@ -242,7 +245,7 @@ def build_team(model: str, n: int, emit, make_chat=None, max_turns: int = 12, ma
 
     def after_impact(state: TeamState) -> str:
         kept = baseline and state.get("reverify") and not state.get("feedback")
-        return "verify" if kept else "lead"
+        return "verifier" if kept else "lead_engineer"
 
     def lead(state: TeamState) -> dict:
         req, round_ = state["req"], state.get("round", 1) - state.get("round_base", 0)
@@ -271,7 +274,7 @@ def build_team(model: str, n: int, emit, make_chat=None, max_turns: int = 12, ma
             feedback = [f"The chief engineer sent the selected design back. Directive: {state['directive']}"]
             feedback += [f"Already verified: {v['design']['material']} {v['design']['width_mm']:g} x "
                          f"{v['design']['thickness_mm']:g} mm at {v['mass_g']:.0f} g" for v in state.get("verified", [])]
-        return [Send("specialist", {"req": state["req"], "material": m, "note": state["notes"][m], "round": round_,
+        return [Send("material_specialist", {"req": state["req"], "material": m, "note": state["notes"][m], "round": round_,
                                     "feedback": feedback}) for m in MATERIALS]
 
     def specialist(task: dict) -> dict:
@@ -384,7 +387,7 @@ def build_team(model: str, n: int, emit, make_chat=None, max_turns: int = 12, ma
         return {"verdict": verdict["decision"]}
 
     def after_review(state: TeamState) -> str:
-        return "lead" if state.get("verdict") == "redesign" else "compliance"
+        return "lead_engineer" if state.get("verdict") == "redesign" else "compliance_engine"
 
     @memo("compliance", lambda s: {**reads(s), "verified": pool_of(s), "agent": review})
     def compliance(state: TeamState) -> dict:
@@ -415,7 +418,7 @@ def build_team(model: str, n: int, emit, make_chat=None, max_turns: int = 12, ma
         design = Design(**state["selected"])
         emit({"type": "rfq", "qty": qty, "needs": state["needs"], "text": sd.rfq_text(design, state["req"], qty, state["needs"]),
               "vendors": [{"id": v["id"], "name": v["name"]} for v in sd.VENDORS]})
-        return [Send("vendor", {"req": state["req"], "design": state["selected"], "needs": state["needs"], "vendor": v})
+        return [Send("supplier_agent", {"req": state["req"], "design": state["selected"], "needs": state["needs"], "vendor": v})
                 for v in sd.VENDORS]
 
     @memo(lambda t: "vendor-" + t["vendor"]["id"],
@@ -467,33 +470,33 @@ def build_team(model: str, n: int, emit, make_chat=None, max_turns: int = 12, ma
         return {}
 
     graph = StateGraph(TeamState, input_schema=TeamInput)
-    graph.add_node("requirements", requirements, retry_policy=RETRY)
-    graph.add_node("approve", approve)
-    graph.add_node("impact", impact)
-    graph.add_node("lead", lead, retry_policy=RETRY)
-    graph.add_node("specialist", specialist)
-    graph.add_node("verify", verify_all)
-    graph.add_node("redteam", redteam)
-    graph.add_node("fragility", fragility)
-    graph.add_node("review", review_board)
-    graph.add_node("compliance", compliance)
-    graph.add_node("vendor", vendor)
+    graph.add_node("requirements_desk", requirements, retry_policy=RETRY)
+    graph.add_node("human_approval", approve)
+    graph.add_node("change_impact", impact)
+    graph.add_node("lead_engineer", lead, retry_policy=RETRY)
+    graph.add_node("material_specialist", specialist)
+    graph.add_node("verifier", verify_all)
+    graph.add_node("red_team_review", redteam)
+    graph.add_node("monte_carlo", fragility)
+    graph.add_node("chief_engineer", review_board)
+    graph.add_node("compliance_engine", compliance)
+    graph.add_node("supplier_agent", vendor)
     graph.add_node("procurement", procurement)
-    graph.add_node("market", scan)
-    graph.add_edge(START, "requirements")
-    graph.add_edge("requirements", "approve")
-    graph.add_edge("approve", "impact")
-    graph.add_conditional_edges("impact", after_impact, ["lead", "verify"])   # a change run can keep the old search
-    graph.add_conditional_edges("lead", dispatch, ["specialist"])
-    graph.add_edge("specialist", "verify")
-    graph.add_edge("verify", "redteam")
-    graph.add_edge("redteam", "fragility")
-    graph.add_edge("fragility", "review")
-    graph.add_conditional_edges("review", after_review, ["lead", "compliance"])   # the loop: back to the lead, or on
-    graph.add_conditional_edges("compliance", rfq, ["vendor", "procurement"])
-    graph.add_edge("vendor", "procurement")
-    graph.add_edge("procurement", "market")
-    graph.add_edge("market", END)
+    graph.add_node("market_scan", scan)
+    graph.add_edge(START, "requirements_desk")
+    graph.add_edge("requirements_desk", "human_approval")
+    graph.add_edge("human_approval", "change_impact")
+    graph.add_conditional_edges("change_impact", after_impact, ["lead_engineer", "verifier"])   # a change run can keep the old search
+    graph.add_conditional_edges("lead_engineer", dispatch, ["material_specialist"])
+    graph.add_edge("material_specialist", "verifier")
+    graph.add_edge("verifier", "red_team_review")
+    graph.add_edge("red_team_review", "monte_carlo")
+    graph.add_edge("monte_carlo", "chief_engineer")
+    graph.add_conditional_edges("chief_engineer", after_review, ["lead_engineer", "compliance_engine"])   # the loop: back to the lead, or on
+    graph.add_conditional_edges("compliance_engine", rfq, ["supplier_agent", "procurement"])
+    graph.add_edge("supplier_agent", "procurement")
+    graph.add_edge("procurement", "market_scan")
+    graph.add_edge("market_scan", END)
     return graph.compile(checkpointer=checkpointer), usage
 
 

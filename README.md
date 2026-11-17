@@ -8,19 +8,58 @@ The example part is a bracket. Several proposers compete to suggest designs and 
 
 ![What the eval found](docs/poster-2.png)
 
+## System design
+
+![System design](docs/system-design.jpg)
+
+Solid lines are built and run today. The scale-out block (job queue, workers, Postgres checkpointer, Redis pub/sub) is the plan for many users, not code in this repo.
+
+## Slides
+
+The project in fourteen slides: the problem, the graph, the hardest decision and the run that proves it, how the agents share state, one failure from building it with a coding agent, load and concurrency, what a run costs and which model goes where, traceability, what shipped and what comes next.
+
+![Slide 1](docs/slides/slide-01.jpg)
+
+![Slide 2](docs/slides/slide-02.jpg)
+
+![Slide 3](docs/slides/slide-03.jpg)
+
+![Slide 4](docs/slides/slide-04.jpg)
+
+![Slide 5](docs/slides/slide-05.jpg)
+
+![Slide 6](docs/slides/slide-06.jpg)
+
+![Slide 7](docs/slides/slide-07.jpg)
+
+![Slide 8](docs/slides/slide-08.jpg)
+
+![Slide 9](docs/slides/slide-09.jpg)
+
+![Slide 10](docs/slides/slide-10.jpg)
+
+![Slide 11](docs/slides/slide-11.jpg)
+
+![Slide 12](docs/slides/slide-12.jpg)
+
+![Slide 13](docs/slides/slide-13.jpg)
+
+![Slide 14](docs/slides/slide-14.jpg)
+
 ## Live design team
 
 A lead agent reads the requirement and writes a search note for each material. Three specialist agents, one per material, then search in parallel with the physics tool. The verifier, plain code with no model, checks every proposal and picks the lightest part that passes. The dashboard shows each step as it happens: the plan, every physics check, every design as a point in the design space, and the final decision with its verification matrix.
 
 ```
- START -> requirements -> approve (interrupt) -> lead -> ...
+ START -> requirements_desk -> human_approval (interrupt) -> change_impact -> lead_engineer -> ...
 
-        +------------------ redesign, with a directive ------------------+
-        v                                                                |
- ... lead -> Al specialist ----+                                         |               -> vendor A --+
-          -> Ti specialist ----+-> verify -> red team -> monte carlo -> review -> compliance -> vendor B --+-> procurement -> market scan -> END
-          -> Steel specialist -+                                                         -> vendor C --+
-                                                                                         -> vendor D --+
+                   +------------------------ redesign, with a directive ------------------------+
+                   v                                                                            |
+ ... lead_engineer -> material_specialist (Al) ----+                                              |
+                   -> material_specialist (Ti) ----+-> verifier -> red_team_review -> monte_carlo -> chief_engineer
+                   -> material_specialist (Steel) -+
+
+ chief_engineer -> compliance_engine -> supplier_agent x4 (in parallel) -> procurement -> market_scan -> END
 ```
 
 Before the team starts, from a mission brief in plain words:
