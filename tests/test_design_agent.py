@@ -670,3 +670,14 @@ def test_the_design_package_escapes_what_agents_and_the_web_wrote(tmp_path, monk
     assert "Design Package" in client.get("/api/package", params={"name": "demo"}).text
     assert client.get("/api/package", params={"name": "../demo"}).status_code == 404
     assert "attachment" in client.get("/api/package", params={"name": "demo", "download": True}).headers["content-disposition"]
+
+
+def test_team_input_and_retry_rules():
+    import anthropic
+    import httpx
+    from design_agent.team import build_team, transient
+    graph, _ = build_team("claude-haiku-5-5", n=1, emit=lambda e: None, make_chat=lambda: None)
+    assert set(graph.get_input_jsonschema()["properties"]) == {"case", "brief", "req"}
+    request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    assert transient(anthropic.APIConnectionError(request=request))
+    assert not transient(ValueError("bad schema"))

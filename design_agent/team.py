@@ -38,7 +38,7 @@ from typing import Annotated, TypedDict
 from langchain_anthropic import ChatAnthropic
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, Send, interrupt
+from langgraph.types import Command, RetryPolicy, Send, interrupt
 from pydantic import BaseModel
 
 from . import compliance as ce
@@ -57,6 +57,20 @@ from .schemas import Design, MaterialName, Proposal, Requirement, Usage
 from .sourcing import find_vendors
 from .verify import select, verify
 
+MAX_CONCURRENCY = 4   # at most this many nodes at once (specialists, vendors); keeps the team under the API rate limit
+
+
+def transient(error: Exception) -> bool:
+    """Errors worth another try: rate limit, overload, timeout, a dropped connection. A bad request is not."""
+    import anthropic
+    return isinstance(error, (anthropic.RateLimitError, anthropic.InternalServerError,
+                              anthropic.APIConnectionError, anthropic.APITimeoutError))
+
+
+# Nodes whose failure stops the run get a retry with backoff. The parallel agents catch their own errors
+# instead, so one failed specialist or vendor leaves a gap rather than stopping the team.
+RETRY = RetryPolicy(max_attempts=3, initial_interval=2.0, retry_on=transient)
+
 SHORT = {"Al 6061-T6": "Al", "Ti-6Al-4V": "Ti", "Steel 4130": "Steel"}
 
 
@@ -72,6 +86,13 @@ class Plan(BaseModel):
 
 class Memo(BaseModel):
     memo: str
+
+
+class TeamInput(TypedDict, total=False):
+    """What a run starts from: a preset case, a mission brief, or a ready requirement. Studio shows only these."""
+    case: str
+    brief: str
+    req: Requirement
 
 
 class TeamState(TypedDict, total=False):
@@ -445,11 +466,11 @@ def build_team(model: str, n: int, emit, make_chat=None, max_turns: int = 12, ma
         emit({"type": "agent_done", "agent": "market"})
         return {}
 
-    graph = StateGraph(TeamState)
-    graph.add_node("requirements", requirements)
+    graph = StateGraph(TeamState, input_schema=TeamInput)
+    graph.add_node("requirements", requirements, retry_policy=RETRY)
     graph.add_node("approve", approve)
     graph.add_node("impact", impact)
-    graph.add_node("lead", lead)
+    graph.add_node("lead", lead, retry_policy=RETRY)
     graph.add_node("specialist", specialist)
     graph.add_node("verify", verify_all)
     graph.add_node("redteam", redteam)
@@ -503,8 +524,9 @@ def run_team(req: Requirement | None, model: str, emit, n: int = 4, make_chat=No
     graph, usage = build_team(model, n, timed, make_chat, market=market, vendor_client=vendor_client, suppliers=suppliers,
                               review=review, red=red, approval=approval, chief=chief, max_rounds=max_rounds, qty=qty,
                               checkpointer=MemorySaver() if approval else None, baseline=baseline, steps=steps)
-    config = {"configurable": {"thread_id": f"run-{start}"}, "recursion_limit": 25 + 10 * max_rounds}
-    state = {"notes": {}, "results": [], "quotes": [], **({"brief": brief} if brief else {"req": req})}
+    config = {"configurable": {"thread_id": f"run-{start}"}, "recursion_limit": 25 + 10 * max_rounds,
+              "max_concurrency": MAX_CONCURRENCY}
+    state = {"brief": brief} if brief else {"req": req}
     result = graph.invoke(state, config)
     while result.get("__interrupt__"):   # the graph stopped for a person; resume it with their answer
         payload = result["__interrupt__"][0].value
