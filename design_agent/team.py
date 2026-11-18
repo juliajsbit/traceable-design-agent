@@ -134,7 +134,7 @@ def build_team(model: str, n: int, emit, make_chat=None, max_turns: int = 12, ma
     capture: contextvars.ContextVar = contextvars.ContextVar("capture", default=None)
     send = emit
 
-    def emit(event: dict) -> None:   # every node below sends its events through here
+    def emit(event: dict) -> None:   # pylint: disable=function-redefined  # wraps the emit argument; every node sends events through here
         buffer = capture.get()
         if buffer is not None:
             buffer.append(event)

@@ -143,6 +143,13 @@ main { position: relative; z-index: 1; }
   justify-content: space-between; gap: 8px; align-items: center; }
 .viewer .ttl { position: absolute; left: 12px; top: 9px; right: 12px; display: flex; justify-content: space-between; }
 .viewer .ttl b { font-size: 13px; }
+.viewer .vtools { position: absolute; left: 12px; top: 32px; display: flex; gap: 4px; align-items: center; z-index: 2; }
+.viewer .vtools button { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--raised); color: var(--text-2); }
+.viewer .vtools button.on { background: var(--text); color: var(--surface); border-color: var(--text); }
+.viewer .vtools .vhint { display: none; font-size: 11.5px; color: var(--muted); margin-left: 8px; }
+.viewer.expanded .vtools { top: 40px; } .viewer.expanded .vtools button { font-size: 12.5px; padding: 4px 11px; }
+.viewer.expanded .vtools .vhint { display: inline; }
+.viewer.expanded canvas { cursor: grab; }
 @media (max-width: 1100px) { .hero { grid-template-columns: 1fr; } .viewer { min-height: 240px; } }
 
 /* click a card to open it large in the middle of the screen; it keeps updating live */
@@ -314,6 +321,7 @@ main { position: relative; z-index: 1; }
   <div class="card viewer" id="viewer">
     <canvas id="part"></canvas>
     <div class="ttl"><b>The part</b><span class="muted" id="v-who">cantilever bracket</span></div>
+    <div class="vtools" id="v-tools"><button data-v="stress" class="on">Stress</button><button data-v="material">Material</button><button data-v="dims">Dimensions</button><button data-v="reset" title="Reset view">&#10227;</button><span class="vhint">drag to rotate · scroll to zoom · hover the beam to probe</span></div>
     <div class="cap"><span class="mono" id="v-dims">fixed at the wall, load at the tip</span><span id="v-pill"></span></div>
   </div>
   </div>
@@ -504,49 +512,97 @@ function step(agent, s) {
 }
 
 // ---- 3D view of the part being checked: a cantilever fixed to a wall, load at the tip ----
-const V = {b: 20, t: 20, D: 0, tb: 20, tt: 20, tD: 0, L: 150, load: 2000, yaw: 0.7, mat: null, label: null};
+// Stress view uses the same beam formulas and material values as physics.py: sigma(x) = 6 F (L - x) / (b t^2),
+// deflection(x) = F x^2 (3L - x) / (6 E I). Utilization = sigma x factor / allowable, the governing of yield and ultimate.
+const V = {b: 20, t: 20, D: 0, tb: 20, tt: 20, tD: 0, L: 150, load: 2000, yf: 1.25, uf: 1.4, yaw: 0.7, pitch: -0.42, zoom: 1,
+  mat: null, label: null, deflection: 0, mode: "stress", dims: false, auto: true, hover: false, mouse: null, drag: null, moved: false, stations: []};
 const MATVAR = {"Al 6061-T6": "--al", "Ti-6Al-4V": "--ti", "Steel 4130": "--steel"};
+const MAT = {"Al 6061-T6": {E: 68.9e9, Sy: 276e6, Su: 310e6}, "Ti-6Al-4V": {E: 113.8e9, Sy: 880e6, Su: 950e6},
+  "Steel 4130": {E: 205e9, Sy: 435e6, Su: 670e6}};
 const BEND = 12;  // deflection is drawn 12x larger so it can be seen
-function hexRgb(v) { const c = getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+// stress colour map, blue (low) to red (at the allowable); above 100% the part fails
+const CMAP = [[0, [44, 82, 214]], [.3, [30, 170, 210]], [.55, [62, 196, 110]], [.75, [236, 206, 58]], [.9, [240, 128, 44]], [1, [214, 40, 56]]];
+function cmap(u) {
+  if (u > 1) return [196, 30, 110];
+  for (let i = 1; i < CMAP.length; i++) if (u <= CMAP[i][0]) {
+    const [a, ca] = CMAP[i - 1], [c, cc] = CMAP[i], k = (u - a) / (c - a);
+    return ca.map((v, j) => Math.round(v + (cc[j] - v) * k));
+  }
+  return CMAP[CMAP.length - 1][1];
+}
+function cssVar(v, d) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || d; }
+function hexRgb(v) { const c = cssVar(v, "");
   return c.startsWith("#") ? [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)) : [140, 150, 170]; }
+// beam physics at a station s (0 = wall, 1 = tip), nominal load, SI inside, display units out
+function station(s) {
+  const m = MAT[V.mat]; if (!m) return null;
+  const F = V.load, L = V.L / 1000, b = V.tb / 1000, t = V.tt / 1000, x = s * L, I = b * t ** 3 / 12;
+  const sigma = 6 * F * (L - x) / (b * t * t);
+  const u = Math.max(sigma * V.yf / m.Sy, sigma * V.uf / m.Su);
+  return {mm: x * 1000, moment: F * (L - x), mpa: sigma / 1e6, u, ms: u > 0 ? 1 / u - 1 : Infinity,
+    defl: F * x * x * (3 * L - x) / (6 * m.E * I) * 1000};
+}
 function setPart(design, label, deflection, who) {
-  V.tb = design.width_mm; V.tt = design.thickness_mm; V.mat = design.material; V.label = label;
+  V.tb = design.width_mm; V.tt = design.thickness_mm; V.mat = design.material; V.label = label; V.deflection = deflection || 0;
   V.tD = Math.min(0.25, (deflection || 0) / V.L * BEND);
   $("v-who").textContent = who;
   $("v-dims").textContent = `${SHORT[design.material]} · ${design.width_mm} x ${design.thickness_mm} x ${V.L} mm · bend shown ${BEND}x`;
   $("v-pill").innerHTML = ""; if (label) $("v-pill").append(pill(label));
 }
+function setView(mode) {
+  if (mode === "dims") V.dims = !V.dims; else if (mode === "reset") { V.yaw = .7; V.pitch = -.42; V.zoom = 1; V.auto = true; } else V.mode = mode;
+  document.querySelectorAll("#v-tools [data-v]").forEach(b => b.classList.toggle("on",
+    b.dataset.v === V.mode || (b.dataset.v === "dims" && V.dims)));
+}
 function drawPart() {
   const cv = $("part"), dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
   if (cv.width !== w * dpr || cv.height !== h * dpr) { cv.width = w * dpr; cv.height = h * dpr; }
   const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
-  V.b += (V.tb - V.b) * .12; V.t += (V.tt - V.t) * .12; V.D += (V.tD - V.D) * .12; V.yaw += .006;
-  const b = V.b / V.L, t = V.t / V.L, D = V.D, N = 16, cy = Math.cos(V.yaw), sy = Math.sin(V.yaw), px = -.42, cp = Math.cos(px), sp = Math.sin(px);
+  const big = !!cv.closest(".expanded"), ink = "#eef2f8", fg = cssVar("--text", "#e7edf7"), muted = cssVar("--muted", "#7d8aa3");
+  const stressOn = V.mode === "stress" && MAT[V.mat];
+  V.b += (V.tb - V.b) * .12; V.t += (V.tt - V.t) * .12; V.D += (V.tD - V.D) * .12;
+  if (V.auto && !V.hover && !V.drag) V.yaw += .006;
+  const b = V.b / V.L, t = V.t / V.L, D = V.D, N = 40, cy = Math.cos(V.yaw), sy = Math.sin(V.yaw), cp = Math.cos(V.pitch), sp = Math.sin(V.pitch);
   const cam = p => { const x1 = p[0] * cy + p[2] * sy, z1 = -p[0] * sy + p[2] * cy, y2 = p[1] * cp - z1 * sp, z2 = p[1] * sp + z1 * cp; return [x1, y2, z2 + 2.5]; };
-  const f = Math.min(w, h * 1.6) * 1.05, ox = w / 2, oy = h * .5;
+  const f = Math.min(w, h * 1.6) * 1.05 * V.zoom, ox = w / 2, oy = h * .5;
   const scr = q => [ox + q[0] * f / q[2], oy - q[1] * f / q[2]];
+  const P = p => scr(cam(p));
   const sub = (a, c) => [a[0] - c[0], a[1] - c[1], a[2] - c[2]], dot = (a, c) => a[0] * c[0] + a[1] * c[1] + a[2] * c[2];
   const cross = (a, c) => [a[1] * c[2] - a[2] * c[1], a[2] * c[0] - a[0] * c[2], a[0] * c[1] - a[1] * c[0]];
+  const line = (pts, stroke, lw, dash) => { g.beginPath(); pts.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]));
+    g.strokeStyle = stroke; g.lineWidth = lw || 1; g.setLineDash(dash || []); g.stroke(); g.setLineDash([]); };
+
+  // floor grid and a soft shadow, so the part sits somewhere
+  const fy = -.34;
+  for (let i = -8; i <= 8; i++) {
+    const a = 1 - Math.abs(i) / 9, col = `rgba(125,138,163,${(.16 * a).toFixed(3)})`;
+    line([P([i / 10, fy, -.7]), P([i / 10, fy, .7])], col); line([P([-.8, fy, i / 10 * .875]), P([.8, fy, i / 10 * .875])], col);
+  }
+  const sh = [[-.45, fy, b / 2 + .04], [.47, fy, b / 2 + .04], [.47, fy, -b / 2 - .04], [-.45, fy, -b / 2 - .04]].map(P);
+  g.save(); g.filter = "blur(7px)"; g.beginPath(); sh.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1]));
+  g.closePath(); g.fillStyle = "rgba(0,0,0,.35)"; g.fill(); g.restore();
+
   const faces = [];
-  const face = (pts, inside, rgb) => faces.push({pts: pts.map(cam), inside: cam(inside), rgb});
+  const face = (pts, inside, rgb, beam) => faces.push({pts: pts.map(cam), inside: cam(inside), rgb, beam});
   // beam: rings of 4 corners along the length, bent like a tip-loaded cantilever
   const rings = [], axis = [];
   for (let i = 0; i <= N; i++) {
     const s = i / N, x = -.45 + s * .9, dy = -D * (3 * s * s - s * s * s) / 2;
     rings.push([[x, dy + t / 2, b / 2], [x, dy + t / 2, -b / 2], [x, dy - t / 2, -b / 2], [x, dy - t / 2, b / 2]]); axis.push([x, dy, 0]);
   }
-  const rgb = V.mat ? hexRgb(MATVAR[V.mat]) : [120, 130, 150];
+  const base = V.mat ? hexRgb(MATVAR[V.mat]) : [120, 130, 150];
   for (let i = 0; i < N; i++) {
     const a = rings[i], c = rings[i + 1], mid = [(axis[i][0] + axis[i + 1][0]) / 2, (axis[i][1] + axis[i + 1][1]) / 2, 0];
-    face([a[0], a[1], c[1], c[0]], mid, rgb); face([a[3], c[3], c[2], a[2]], mid, rgb);
-    face([a[0], c[0], c[3], a[3]], mid, rgb); face([a[1], a[2], c[2], c[1]], mid, rgb);
+    const rgb = stressOn ? cmap(station((i + .5) / N).u) : base;
+    face([a[0], a[1], c[1], c[0]], mid, rgb, true); face([a[3], c[3], c[2], a[2]], mid, rgb, true);
+    face([a[0], c[0], c[3], a[3]], mid, rgb, true); face([a[1], a[2], c[2], c[1]], mid, rgb, true);
   }
-  face(rings[N], axis[N - 1], rgb);
+  face(rings[N], axis[N - 1], stressOn ? cmap(0) : base, true);
   // wall
   const wx = -.45, ws = .32, wd = .05, wall = [140, 146, 160];
   const W8 = [[wx - wd, ws, ws], [wx, ws, ws], [wx, ws, -ws], [wx - wd, ws, -ws], [wx - wd, -ws, ws], [wx, -ws, ws], [wx, -ws, -ws], [wx - wd, -ws, -ws]];
   const wc = [wx - wd / 2, 0, 0];
-  [[0, 1, 2, 3], [4, 7, 6, 5], [0, 4, 5, 1], [3, 2, 6, 7], [1, 5, 6, 2], [0, 3, 7, 4]].forEach(ix => face(ix.map(k => W8[k]), wc, wall));
+  [[0, 1, 2, 3], [4, 7, 6, 5], [0, 4, 5, 1], [3, 2, 6, 7], [1, 5, 6, 2], [0, 3, 7, 4]].forEach(ix => face(ix.map(k => W8[k]), wc, wall, false));
   // shade and draw back to front
   const light = [-.35, .65, -.68];
   const drawn = faces.map(F => {
@@ -558,26 +614,111 @@ function drawPart() {
   }).filter(o => dot(o.n, o.ctr) < 0).sort((p, q) => q.z - p.z);
   const failing = V.label && V.label !== "verified";
   for (const {F, n} of drawn) {
-    const k = .38 + .62 * Math.max(0, dot(n, light));
+    const k = (stressOn && F.beam ? .55 : .38) + (stressOn && F.beam ? .45 : .62) * Math.max(0, dot(n, light));
     g.beginPath(); F.pts.map(scr).forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath();
     g.fillStyle = `rgb(${F.rgb.map(c => Math.round(c * k)).join(",")})`; g.fill();
     // beam segments get a stroke in their own fill colour so the surface reads as one piece
-    g.strokeStyle = failing && F.rgb === rgb ? "rgba(208,59,59,.9)" : F.rgb === rgb ? g.fillStyle : "rgba(0,0,0,.25)";
-    g.lineWidth = failing && F.rgb === rgb ? 1.2 : .8; g.stroke();
+    g.strokeStyle = failing && F.beam && !stressOn ? "rgba(208,59,59,.9)" : F.beam ? g.fillStyle : "rgba(0,0,0,.25)";
+    g.lineWidth = failing && F.beam && !stressOn ? 1.2 : .8; g.stroke();
   }
+
+  // where the beam is on screen, for the hover probe (top centre line)
+  V.stations = rings.map((r, i) => { const q = P([r[0][0], (r[0][1] + r[3][1]) / 2, 0]); return {s: i / N, x: q[0], y: q[1]}; });
+
   // load arrow at the tip
   const tip = rings[N], top = [tip[0][0], (tip[0][1] + tip[1][1]) / 2 + .01, 0];
-  const a0 = scr(cam([top[0], top[1] + .3, 0])), a1 = scr(cam(top));
-  g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--warn").trim() || "#fab219";
-  g.fillStyle = g.strokeStyle; g.lineWidth = 2.5;
+  const a0 = P([top[0], top[1] + .3, 0]), a1 = P(top), warn = cssVar("--warn", "#fab219");
+  g.strokeStyle = warn; g.fillStyle = warn; g.lineWidth = 2.5;
   g.beginPath(); g.moveTo(a0[0], a0[1]); g.lineTo(a1[0], a1[1]); g.stroke();
   const ang = Math.atan2(a1[1] - a0[1], a1[0] - a0[0]);
   g.beginPath(); g.moveTo(a1[0], a1[1]);
   g.lineTo(a1[0] - 10 * Math.cos(ang - .45), a1[1] - 10 * Math.sin(ang - .45)); g.lineTo(a1[0] - 10 * Math.cos(ang + .45), a1[1] - 10 * Math.sin(ang + .45));
   g.closePath(); g.fill();
-  g.font = "600 12px ui-monospace, Menlo, monospace"; g.fillText(`${V.load} N`, a0[0] + 6, a0[1] + 4);
+  g.font = "600 12px ui-monospace, Menlo, monospace"; g.fillText(`F = ${V.load} N`, a0[0] + 6, a0[1] + 4);
+
+  const tag = (x, y, text, color, align) => {
+    g.font = `600 ${big ? 12.5 : 11}px ui-monospace, Menlo, monospace`;
+    const tw = g.measureText(text).width, px = align === "right" ? x - tw - 10 : align === "center" ? x - tw / 2 - 5 : x;
+    g.fillStyle = "rgba(8,12,22,.78)"; g.beginPath(); g.roundRect(px, y - 10, tw + 10, 19, 5); g.fill();
+    g.fillStyle = color || ink; g.fillText(text, px + 5, y + 4);
+  };
+  // dimensions
+  if (V.dims) {
+    // the length goes on the side that faces the camera, just below the bent beam
+    const zs = cam([0, 0, 1])[2] < cam([0, 0, -1])[2] ? 1 : -1, dc = "rgba(180,191,211,.85)", dyTip = axis[N][1];
+    const zl = zs * (b / 2 + .04), yl = dyTip - t / 2 - .05;
+    const l0 = P([-.45, yl, zl]), l1 = P([.45, yl, zl]);
+    line([P([-.45, -t / 2, zs * b / 2]), l0], dc, .8, [3, 3]); line([P([.45, dyTip - t / 2, zs * b / 2]), l1], dc, .8, [3, 3]); line([l0, l1], dc, 1.2);
+    tag((l0[0] + l1[0]) / 2, (l0[1] + l1[1]) / 2 + 2, `L = ${V.L} mm`, ink, "center");
+    const xt = .45 + .06, w0 = P([xt, dyTip + t / 2, -b / 2]), w1 = P([xt, dyTip + t / 2, b / 2]);
+    line([w0, w1], dc, 1.2); tag(Math.max(w0[0], w1[0]) + 6, (w0[1] + w1[1]) / 2, `b = ${V.tb} mm`);
+    const t0 = P([xt, dyTip - t / 2, zs * b / 2]), t1 = P([xt, dyTip + t / 2, zs * b / 2]);
+    line([t0, t1], dc, 1.2); tag(Math.max(t0[0], t1[0]) + 6, (t0[1] + t1[1]) / 2 + 18, `t = ${V.tt} mm`);
+  }
+  // stress: max callout at the root and a colour bar
+  if (stressOn) {
+    const r0 = station(0), q = P([-.45 + .02, t / 2, 0]);
+    if (big) {   // the small card is too tight for the callout
+      const lx = q[0] - 18, ly = q[1] - 34;
+      line([q, [lx, ly]], fg, 1); g.fillStyle = fg; g.beginPath(); g.arc(q[0], q[1], 2.5, 0, 7); g.fill();
+      tag(lx, ly, `max ${r0.mpa.toFixed(0)} MPa · MS ${r0.ms >= 0 ? "+" : ""}${r0.ms.toFixed(2)}`, r0.u > 1 ? "#ff6b8a" : ink, "right");
+    }
+    const bw = big ? 12 : 8, bh = big ? Math.min(240, h * .5) : Math.min(80, h * .35), bx = w - bw - (big ? 110 : 40), by = big ? 104 : 66;
+    const grad = g.createLinearGradient(0, by + bh, 0, by);
+    CMAP.forEach(([u, c]) => grad.addColorStop(u, `rgb(${c.join(",")})`));
+    g.fillStyle = grad; g.beginPath(); g.roundRect(bx, by, bw, bh, 3); g.fill();
+    g.font = `600 ${big ? 11.5 : 10}px ui-monospace, Menlo, monospace`; g.fillStyle = muted;
+    [[1, "100%"], [.5, "50%"], [0, "0"]].forEach(([u, s]) => g.fillText(s, bx + bw + 5, by + bh * (1 - u) + 4));
+    if (big) { g.fillStyle = `rgb(${cmap(2).join(",")})`; g.beginPath(); g.roundRect(bx, by + bh + 12, bw, bw, 3); g.fill();
+      g.fillStyle = muted; g.fillText("> 100%: fails", bx + bw + 5, by + bh + 12 + bw - 1); }
+    g.textAlign = "right";
+    if (big) { g.fillText("stress, % of allowable", bx + bw + 34, by - 36); g.fillText("σ x factor / strength", bx + bw + 34, by - 21); }
+    else g.fillText("stress", bx + bw + 30, by - 9);
+    g.textAlign = "left";
+  }
+  if (!MAT[V.mat]) tag(w / 2, h - 48, "no design yet: Run live or Replay to see stress and material", muted, "center");
+  // hover probe: section cut and readout at the station under the mouse
+  if (V.mouse && MAT[V.mat] && !V.drag) {
+    let best = null;
+    for (const st of V.stations) { const d = Math.hypot(st.x - V.mouse[0], st.y - V.mouse[1]); if (!best || d < best.d) best = {...st, d}; }
+    if (best && best.d < (big ? 40 : 28)) {
+      const i = Math.round(best.s * N), r = rings[i], R = station(best.s);
+      line([...r.map(p => P(p)), P(r[0])], "#ffffff", 1.6);
+      const lines = [`x = ${R.mm.toFixed(0)} mm from the wall`, `M = ${R.moment.toFixed(0)} N·m   σ = ${R.mpa.toFixed(0)} MPa`,
+        `${(R.u * 100).toFixed(0)}% of allowable · MS ${R.ms === Infinity ? "-" : (R.ms >= 0 ? "+" : "") + R.ms.toFixed(2)}`,
+        `deflection ${R.defl.toFixed(2)} mm`];
+      g.font = `500 ${big ? 12.5 : 11}px ui-monospace, Menlo, monospace`;
+      const tw = Math.max(...lines.map(s => g.measureText(s).width)) + 18, th = lines.length * (big ? 18 : 15) + 10;
+      let tx = V.mouse[0] + 16, ty = V.mouse[1] + 16; if (tx + tw > w - 6) tx = V.mouse[0] - tw - 16; if (ty + th > h - 30) ty = V.mouse[1] - th - 12;
+      g.fillStyle = "rgba(8,12,22,.9)"; g.strokeStyle = `rgb(${cmap(R.u).join(",")})`; g.lineWidth = 1.2;
+      g.beginPath(); g.roundRect(tx, ty, tw, th, 7); g.fill(); g.stroke();
+      lines.forEach((s, k) => { g.fillStyle = k === 2 ? (R.u > 1 ? "#ff6b8a" : `rgb(${cmap(Math.min(1, R.u)).join(",")})`) : k ? ink : muted;
+        g.fillText(s, tx + 9, ty + 18 + k * (big ? 18 : 15)); });
+      cv.style.cursor = "crosshair";
+    } else cv.style.cursor = "";
+  }
   requestAnimationFrame(drawPart);
 }
+// mouse: drag to rotate, scroll to zoom when the card is open, hover to probe
+(function viewerInput() {
+  const cv = $("part"), pos = ev => { const r = cv.getBoundingClientRect(); return [ev.clientX - r.left, ev.clientY - r.top]; };
+  cv.addEventListener("mouseenter", () => { V.hover = true; });
+  cv.addEventListener("mouseleave", () => { V.hover = false; V.mouse = null; cv.style.cursor = ""; });
+  cv.addEventListener("mousedown", ev => { V.drag = {x: ev.clientX, y: ev.clientY, yaw: V.yaw, pitch: V.pitch}; V.moved = false; });
+  window.addEventListener("mousemove", ev => {
+    if (V.drag) {
+      const dx = ev.clientX - V.drag.x, dy = ev.clientY - V.drag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 4) { V.moved = true; V.auto = false; cv.style.cursor = "grabbing"; }
+      V.yaw = V.drag.yaw + dx * .01; V.pitch = Math.max(-1.3, Math.min(.25, V.drag.pitch - dy * .01));
+    } else if (ev.target === cv) V.mouse = pos(ev);
+  });
+  window.addEventListener("mouseup", () => { if (V.drag) { V.drag = null; cv.style.cursor = ""; } });
+  cv.addEventListener("wheel", ev => {
+    if (!cv.closest(".expanded")) return;
+    ev.preventDefault(); V.zoom = Math.max(.6, Math.min(2.6, V.zoom * Math.exp(-ev.deltaY * .0015)));
+  }, {passive: false});
+  $("v-tools").addEventListener("click", ev => { const bt = ev.target.closest("[data-v]"); if (bt) setView(bt.dataset.v); });
+})();
 
 // ---- design space plot ----
 const W = 860, M = {l: 56, r: 18, t: 14, b: 42};
@@ -686,7 +827,7 @@ function setup(e) {
   const r = e.requirement;
   S.liveReq = r;
   S.optimum = e.optimum || S.optimum; S.optMargin = null;
-  V.L = r.length_mm; V.load = Math.round(r.load_n); V.mat = null; V.label = null;
+  V.L = r.length_mm; V.load = Math.round(r.load_n); V.mat = null; V.label = null; V.yf = r.yield_factor || 1.25; V.uf = r.ultimate_factor || 1.4;
   $("v-who").textContent = "waiting for the first check"; $("v-pill").innerHTML = "";
   $("v-dims").textContent = `cantilever, ${V.L} mm long, ${V.load} N at the tip`;
   const chips = [`part: ${r.part.length > 40 ? "cantilever bracket" : r.part}`, `case ${r.case}`, `${Math.round(r.load_n)} N at ${r.length_mm} mm`,
@@ -1317,6 +1458,7 @@ function collapse() {
 document.addEventListener("click", ev => {
   if (expanded) { if (ev.target === $("backdrop") || ev.target.closest("#close")) collapse(); return; }
   if (ev.target.closest("textarea, input, label")) return;
+  if (ev.target.id === "part" && V.moved) { V.moved = false; return; }
   const card = ev.target.closest(".lane, .chart, .decision, .viewer, .compliance, .suppliers, .market, .pipeline, .redteam, .reqdesk, .fragility, .tradeoffs, .board");
   if (card && !ev.target.closest("button, select, a")) expand(card);
 });

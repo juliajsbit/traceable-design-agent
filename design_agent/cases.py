@@ -24,13 +24,13 @@ def oracle(req: Requirement, materials=None) -> tuple[Design, float] | None:
     """Every material x every width in 0.1 mm steps x every stock thickness. Returns the lightest design that passes.
     Widths are machined, so any width is allowed; 0.1 mm is finer than a drawing tolerance would care about."""
     (wmin, wmax), (tmin, tmax) = req.width_range_mm, req.thickness_range_mm
-    best = None
+    best, best_g = None, float("inf")
     for material in materials or MATERIALS:
         for tenths in range(round(wmin * 10), round(wmax * 10) + 1):
             width = tenths / 10
             for thickness in (t for t in STOCK_THICKNESSES_MM if tmin <= t <= tmax):
                 d = Design(material=material, width_mm=width, thickness_mm=thickness)
                 c = check(d, req)
-                if c.passes and (best is None or c.mass_g < best[1]):
-                    best = (d, c.mass_g)
-    return best
+                if c.passes and c.mass_g < best_g:
+                    best, best_g = d, c.mass_g
+    return (best, best_g) if best else None
