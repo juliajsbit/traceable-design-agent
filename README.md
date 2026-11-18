@@ -8,6 +8,16 @@ The example part is a bracket. Several proposers compete to suggest designs and 
 
 ![What the eval found](docs/poster-2.png)
 
+## Dashboard
+
+A live run of case G on Haiku: 113 s, 32 model calls, $0.061. The part view colours the beam by bending stress as a share of the allowable, from the same formulas the verifier uses; hover the beam to read moment, stress and margin at any point. Below it, the change impact form re-runs only what a changed requirement affects.
+
+![Dashboard: run summary, part view with stress, change impact](docs/ui/dashboard-top.jpg)
+
+The pipeline lights up node by node. Three specialists search in parallel, the verifier checks 12 of 12 proposals, and the team ships Ti-6Al-4V 20 x 6 mm at 43 g, the same design the brute-force search finds as the true optimum.
+
+![Dashboard: pipeline, specialist lanes, design space and decision](docs/ui/dashboard-team.jpg)
+
 ## System design
 
 ![System design](docs/system-design.jpg)
