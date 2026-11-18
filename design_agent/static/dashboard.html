@@ -197,7 +197,19 @@ main { position: relative; z-index: 1; }
 .pipeline .phead { display: flex; gap: 12px; align-items: baseline; font-size: 14px; }
 .pipeline .phead .muted { font-size: 12px; }
 .pipeline svg { width: 100%; height: auto; display: block; max-height: 190px; }
-.pipeline.expanded svg { max-height: none; }
+.pipeline.expanded svg { max-height: 52vh; margin: 6px 0 4px; }
+.pipeline.expanded { width: min(1500px, 96vw); height: auto; max-height: 92vh; }
+.pipeline.expanded .phead { font-size: 17px; } .pipeline.expanded .phead .muted { font-size: 13px; }
+.pdetail { display: none; }
+.pipeline.expanded .pdetail { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 8px; margin-top: 8px; }
+.pnode { border: 1px solid var(--line); border-left: 3px solid var(--c); border-radius: 8px; padding: 8px 10px; background: var(--raised); display: grid; gap: 3px; }
+.pnode .top { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.pnode .top b { font-size: 14px; } .pnode code { font-size: 12.5px; color: var(--text-2); }
+.pnode .kind { font-size: 12px; color: var(--muted); } .pnode .what { font-size: 13px; color: var(--text-2); }
+.pnode .live { font-size: 12.5px; font-family: ui-monospace, Menlo, monospace; color: var(--text); }
+.pnode .st { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--surface); color: var(--muted); white-space: nowrap; }
+.pnode .st.active { color: var(--warn-ink); background: var(--warn-bg); } .pnode .st.done { color: var(--good-ink); background: var(--good-bg); }
+.pnode .st.error { color: var(--bad); background: var(--bad-bg); }
 .lane .plan { -webkit-line-clamp: unset; display: block; overflow-y: auto; border-top: 0; font-size: 12.5px; }
 .compliance, .suppliers, .market { padding: 12px 14px; max-height: 460px; overflow: auto; cursor: zoom-in; position: relative; }
 .compliance.expanded, .suppliers.expanded, .market.expanded { max-height: none; }
@@ -333,6 +345,7 @@ main { position: relative; z-index: 1; }
   <div class="card pipeline" id="pipeline">
     <div class="phead"><b>Pipeline</b><span class="muted">LangGraph · every box is a node, lit while it runs</span></div>
     <svg class="graph" id="graph" viewBox="0 0 1750 196" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="pdetail" id="pdetail"></div>
   </div>
 
   <div class="team" id="team"></div>
@@ -468,17 +481,34 @@ const GE = [["start", "requirements"], ["requirements", "lead"], ["lead", "Al"],
   ["verify", "redteam"], ["redteam", "fragility"], ["fragility", "chief"], ["chief", "compliance"], ["chief", "lead"], ...VK.map(k => ["compliance", k]), ...VK.map(k => [k, "procurement"]), ["procurement", "market"], ["market", "end"]];
 const SUB0 = {chief: "ship or redesign", fragility: "2000 samples, code", requirements: "brief -> approval", redteam: "tries to break it", verify: "no model", compliance: "rules in code + review", procurement: "code ranks, agent writes", market: "web search",
   vA: "sample vendor", vB: "sample vendor", vC: "sample vendor", vD: "sample vendor"};
+// the open card has room to go down, so it draws the same graph in two rows and reads 1.6x larger
+const ROW2 = {start: [36, 100], requirements: [148, 100], lead: [282, 100], Al: [422, 44], Ti: [422, 100], Steel: [422, 156], verify: [566, 100],
+  redteam: [696, 100], fragility: [826, 100], chief: [958, 100], compliance: [185, 329], vA: [410, 266], vB: [410, 308], vC: [410, 350], vD: [410, 392],
+  procurement: [620, 329], market: [810, 329], end: [960, 329]};
+function layout() {
+  const two = !!$("graph").closest(".expanded");
+  if (!two) return {N: GN, two, box: "0 0 1750 196", loopY: 180};
+  const N = {}; for (const [id, n] of Object.entries(GN)) N[id] = {...n, x: ROW2[id][0], y: ROW2[id][1]};
+  return {N, two, box: "0 0 1050 420", loopY: 196};
+}
 function drawGraph() {
   const svg = $("graph"), ns = "http://www.w3.org/2000/svg";
   if (!svg) return;
+  const keep = {};   // node and edge states set by events survive a redraw
+  svg.querySelectorAll("[id]").forEach(e => { keep[e.id] = {cls: e.getAttribute("class"), text: e.textContent}; });
+  const {N: GN, two, box, loopY} = layout();
+  svg.setAttribute("viewBox", box);
   svg.innerHTML = "";
   for (const [a, b] of GE) {
     const A = GN[a], B = GN[b], x1 = A.x + A.w / 2, x2 = B.x - B.w / 2, mx = (x1 + x2) / 2;
     const path = document.createElementNS(ns, "path");
     path.setAttribute("d", `M${x1} ${A.y} C${mx} ${A.y} ${mx} ${B.y} ${x2} ${B.y}`);
     path.setAttribute("class", "g-edge"); path.id = `e-${a}-${b}`; path.style.setProperty("--c", ["end", "verify", "procurement"].includes(b) ? A.c : B.c);
-    if (B.x < A.x) {   // the redesign loop: back from the Chief Engineer to the Lead, under the other nodes
-      const y0 = A.y + A.h / 2, y1 = 180;
+    if (two && a === "chief" && b === "compliance") {   // down to the second row
+      const xr = A.x + A.w / 2, ch = 240;
+      path.setAttribute("d", `M${xr} ${A.y} H${xr + 14} Q${xr + 22} ${A.y} ${xr + 22} ${A.y + 8} V${ch - 8} Q${xr + 22} ${ch} ${xr + 14} ${ch} H48 Q40 ${ch} 40 ${ch + 8} V${B.y - 8} Q40 ${B.y} 48 ${B.y} H${x2}`);
+    } else if (B.x < A.x) {   // the redesign loop: back from the Chief Engineer to the Lead, under the other nodes
+      const y0 = A.y + A.h / 2, y1 = loopY;
       path.setAttribute("d", `M${A.x} ${y0} V${y1 - 8} Q${A.x} ${y1} ${A.x - 8} ${y1} H${B.x + 8} Q${B.x} ${y1} ${B.x} ${y1 - 8} V${B.y + B.h / 2}`);
       path.style.setProperty("--c", A.c);
       const t = document.createElementNS(ns, "text");
@@ -499,11 +529,54 @@ function drawGraph() {
     const tip = document.createElementNS(ns, "title"); tip.id = "tt-" + id; tip.textContent = n.label; g.append(tip);
     svg.append(g);
   }
+  for (const [id, k] of Object.entries(keep)) {
+    const e = document.getElementById(id); if (!e || !svg.contains(e)) continue;
+    if (k.cls) e.setAttribute("class", k.cls);
+    if (id.startsWith("sub-") || id.startsWith("tt-")) e.textContent = k.text;
+  }
+  pipeDetail();
+}
+// the 13 LangGraph nodes in team.py, with the names they have in code
+const PNODES = [
+  {ids: ["requirements"], node: "requirements_desk", kind: "agent", what: "Drafts the requirement from the brief, a source for every value. Code computes the load."},
+  {ids: [], node: "human_approval", kind: "person", what: "interrupt(): the graph stops until a person approves or edits the requirement (brief runs)."},
+  {ids: [], node: "change_impact", kind: "code", what: "On a change run: diffs the requirement and re-runs only the steps it affects."},
+  {ids: ["lead"], node: "lead_engineer", kind: "agent", what: "Plans the search and briefs each specialist."},
+  {ids: ["Al", "Ti", "Steel"], node: "material_specialist x3", kind: "agent + physics tool", what: "Run in parallel via Send. Propose designs and check them with the tool in a loop."},
+  {ids: ["verify"], node: "verifier", kind: "code", what: "Re-checks every claim with physics. Ground truth, no model."},
+  {ids: ["redteam"], node: "red_team_review", kind: "agent + stress_test tool", what: "Tries to break the design; code re-checks every finding."},
+  {ids: ["fragility"], node: "monte_carlo", kind: "code", what: "2000 samples of load and thickness: probability of failure."},
+  {ids: ["chief"], node: "chief_engineer", kind: "agent, code decides", what: "Proposes ship, redesign or escalate. The code gate P(fail) <= 1% has the last word."},
+  {ids: ["compliance"], node: "compliance_engine", kind: "code + review agent", what: "About 20 rules in code; an agent explains the gaps and names owners."},
+  {ids: ["vA", "vB", "vC", "vD"], node: "supplier_agent x4", kind: "agent + shop tools", what: "One agent per sample vendor answers the request for quote."},
+  {ids: ["procurement"], node: "procurement", kind: "code + agent", what: "Code ranks the quotes; an agent writes the memo."},
+  {ids: ["market"], node: "market_scan", kind: "agent + web search", what: "Real web search for shops; links are checked."},
+];
+function pipeDetail() {
+  const box = $("pdetail"); if (!box || !box.closest(".expanded")) return;
+  const model = (S && S.model) || ($("model") && $("model").value) || "";
+  box.innerHTML = "";
+  for (const p of PNODES) {
+    const els = p.ids.map(id => $("n-" + id)).filter(Boolean), cls = els.map(e => e.getAttribute("class") || "");
+    const st = cls.some(c => c.includes("error")) ? "error" : cls.some(c => c.includes("active")) ? "active" : cls.some(c => c.includes("done")) ? "done" : "";
+    const c = p.ids.length ? GN[p.ids[0]].c : "var(--muted)";
+    const live = p.ids.map(id => { const t = ($("sub-" + id) || {}).textContent || "";
+      return p.ids.length > 1 ? `${GN[id].label.replace(" specialist", "").replace("Vendor ", "")}: ${t}` : t; }).join(" · ");
+    const card = el("div", "pnode"); card.style.setProperty("--c", c);
+    const top = el("div", "top"), name = el("b", null, p.ids.length ? GN[p.ids[0]].label.replace(/ [A-D]$/, "s").replace("Al specialist", "Material specialists") : p.node.replace("_", " "));
+    top.append(name, el("span", "st " + st, p.ids.length ? ({active: "running", done: "done", error: "error"}[st] || "waiting") : "not drawn above"));
+    const usesModel = !/^(code|person)$/.test(p.kind);
+    card.append(top, el("code", null, p.node), el("div", "kind", p.kind + (usesModel && model ? ` · ${model}` : p.kind === "code" ? " · no model, $0" : "")),
+      el("div", "what", p.what));
+    if (live) card.append(el("div", "live", live));
+    box.append(card);
+  }
 }
 function node(id, state, sub) {
   const g = $("n-" + id); if (!g) return;
   g.setAttribute("class", "g-node " + (state || "") + (S && S.reusedNodes.has(id) ? " reused" : ""));
   if (sub != null && $("sub-" + id)) $("sub-" + id).textContent = sub;
+  pipeDetail();
 }
 function edge(a, b, state) { const e = $(`e-${a}-${b}`); if (e) e.setAttribute("class", "g-edge " + (state || "")); }
 function step(agent, s) {
@@ -1447,13 +1520,15 @@ function expand(card) {
   card.replaceWith(placeholder); $("backdrop").append(card);
   card.classList.add("expanded"); $("backdrop").classList.add("open"); expanded = card;
   if (card.classList.contains("chart")) plot();
+  if (card.classList.contains("pipeline")) drawGraph();
 }
 function collapse() {
   if (!expanded) return;
   expanded.classList.remove("expanded"); placeholder.replaceWith(expanded);
   $("backdrop").classList.remove("open");
-  const wasChart = expanded.classList.contains("chart"); expanded = null; placeholder = null;
+  const wasChart = expanded.classList.contains("chart"), wasPipe = expanded.classList.contains("pipeline"); expanded = null; placeholder = null;
   if (wasChart) plot();
+  if (wasPipe) drawGraph();
 }
 document.addEventListener("click", ev => {
   if (expanded) { if (ev.target === $("backdrop") || ev.target.closest("#close")) collapse(); return; }

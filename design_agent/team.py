@@ -527,7 +527,7 @@ def run_team(req: Requirement | None, model: str, emit, n: int = 4, make_chat=No
     graph, usage = build_team(model, n, timed, make_chat, market=market, vendor_client=vendor_client, suppliers=suppliers,
                               review=review, red=red, approval=approval, chief=chief, max_rounds=max_rounds, qty=qty,
                               checkpointer=MemorySaver() if approval else None, baseline=baseline, steps=steps)
-    config = {"configurable": {"thread_id": f"run-{start}"}, "recursion_limit": 25 + 10 * max_rounds,
+    config = {"configurable": {"thread_id": f"run-{start}"}, "run_name": "team", "recursion_limit": 25 + 10 * max_rounds,
               "max_concurrency": MAX_CONCURRENCY}
     state = {"brief": brief} if brief else {"req": req}
     result = graph.invoke(state, config)
